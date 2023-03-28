@@ -1,12 +1,24 @@
-let data;
-
-
+const parseTime = d3.timeParse("%m-%d");
 // load the intakes data
-d3.csv('data/aac_intakes.csv').then(_data => {
-    data = _data;
-    data.forEach(d => {
-        d.datetime = +d.datetime;
-        // console.log(d)
-    });
+d3.csv('data/aac_intakes_outcomes.csv').then(data => {
+    // data.forEach(d => {
+    //     d.uid = +d.animal_id_intake;
+    //     d.intake_number = +d.intake_number;
+    //     d.animal_type = +d.animal_type;
+    //     d.intake_condition = +d.intake_condition;
+    //     d.intake_type = +d.intake_type;
+    //     d.intake_age = +d.age_upon_intake_age_group;
+    //     d.intake_date = parseTime(d.intake_monthyear);
+    //     d.time_in_shelter_days = +d.time_in_shelter_days;
+    //     d.outcome_type = +d.outcome_type;
+    //     d.outcome_age = +d.age_upon_outcome_age_group;
+    //     d.outcome_date = parseTime(d.outcome_monthyear);
+    //     d.breed = +d.breed;
+    // });
+
+    let bubble = new BubbleChart({ parentElement: '#bubble-chart'}, data);
+    bubble.updateVis();
 
 });
+
+
