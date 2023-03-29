@@ -23,3 +23,16 @@ body {
     font-size: 12px;
     font-weight: 500;
   }
+
+.bar:hover {
+    stroke: #000;
+}
+
+line {
+  color: #a4a5c3;
+  opacity: 0.5;
+}
+
+.axis path {
+  display: none;
+}
