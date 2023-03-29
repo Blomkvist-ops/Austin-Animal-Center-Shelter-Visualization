@@ -5,6 +5,11 @@ body {
     background: #f7f7f7;
 }
 
+.bubble:hover {
+  stroke: #000;
+  stroke-width: 5px;
+}
+
 
 #tooltip {
     position: absolute;

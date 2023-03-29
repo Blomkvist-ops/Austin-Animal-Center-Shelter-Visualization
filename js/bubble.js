@@ -9,8 +9,8 @@ class BubbleChart {
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: 600,
-            containerHeight: 800,
-            margin: { top: 15, right: 10, bottom: 70, left: 60 },
+            containerHeight: 400,
+            margin: { top: 15, right: 10, bottom: 50, left: 30 },
             tooltipPadding: 15,
         }
         this.data = _data;
@@ -38,34 +38,54 @@ class BubbleChart {
 
         vis.chart = vis.chartArea.append('g');
 
+        vis.svg.append('text')
+        .attr('class', '.title')
+        .attr('x', 0)
+        .attr('y', 100)
+        .attr('dy', '.71em')
+        .text('Breed Distribution');
+
         // Color palette for animal types
         vis.color = d3.scaleOrdinal()
             .domain(["Dog", "Cat", "Bird", "Other"])
             .range(d3.schemeTableau10);
 
         // Size scale for countries
-        vis.size = d3.scaleLinear()
-            .range([15, 80])  // circle will be between 7 and 55 px wide
+        vis.size = d3.scaleSqrt()
+            .range([8, 80])
 
-
-        // Features of the forces applied to the nodes:
+        // create a force simulation and add forces to it
         vis.simulation = d3.forceSimulation()
-            .force("center", d3.forceCenter().x(200).y(400)) // Attraction to the center of the svg area
-            .force("charge", d3.forceManyBody().strength(.1)) // Nodes are attracted one each other of value is > 0
-            .force("collide", d3.forceCollide().strength(.2).radius(function (d) { return (vis.size(d.value) + 3) }).iterations(1)) // Force that avoids circle overlapping
+            .force('charge', d3.forceManyBody().strength(function (d) {
+                return Math.pow(d.radius, 2.0) * 0.01
+            }))
+            .force('x', d3.forceX().strength(0.03).x(vis.width / 2))
+            .force('y', d3.forceY().strength(0.03).y(vis.height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 2));
 
+        // force simulation starts up automatically, which we don't want as there aren't any nodes yet
+        vis.simulation.stop();
     }
 
     updateVis() {
         let vis = this;
 
-        vis.group = Array.from(d3.rollup(vis.data, v => v.length, d => d.breed, d => d.animal_type), ([breed, type, value]) => ({
+        const rollup = d3.rollup(vis.data, v => v.length, d => d.breed, d => d.animal_type);
+
+        vis.group = Array.from(rollup, ([breed, type, value]) => ({
             breed: breed,
             type: Array.from(type.keys())[0],
-            value: Array.from(type.values())[0]
+            value: Array.from(type.values())[0],
         })).sort((a, b) => b.value - a.value).slice(0, 100);
 
         vis.size.domain(d3.extent(vis.group, d => d.value));
+
+        vis.nodes = vis.group.map(d => ({
+            ...d,
+            radius: vis.size(d.value),
+            x: Math.random() * 900,
+            y: Math.random() * 800
+        }))
 
         vis.renderVis();
     }
@@ -74,44 +94,68 @@ class BubbleChart {
     renderVis() {
         let vis = this;
 
-        var node = vis.chart.selectAll('.circle')
-            .data(vis.group)
-            .join("circle")
-            .attr("class", "node")
-            .attr("r", d => vis.size(d.value))
-            .attr("cx", 200)
-            .attr("cy", 400)
-            .style("fill", d => vis.color(d.type))
-            .style("fill-opacity", 0.8)
-            .attr("stroke", "black")
-            .style("stroke-width", 1)
+        const elements = vis.chart.selectAll('.bubble')
+            .data(vis.nodes, d => d.breed)
+            .enter()
+            .append('g')
+
+        const bubbles = elements
+            .append('circle')
+            .classed('bubble', true)
+            .attr('r', d => d.radius)
+            .attr('fill', d => vis.color(d.type))
             .call(d3.drag() // call specific function when circle is dragged
                 .on("start", dragstarted)
                 .on("drag", dragged)
                 .on("end", dragended));
 
+        const labels = elements
+            .append('text')
+            .attr('dy', '.3em')
+            .style('text-anchor', 'middle')
+            .style('font-size', 12)
+            .text(function (d) {
+                return (d.value > 1000) ? ((d.value / vis.data.length) * 100).toFixed(2) + "%"  : '';
+            })
+
+        const labels1 = elements
+            .append('text')
+            .attr('dy', '2em')
+            .style('text-anchor', 'middle')
+            .style('font-size', 7)
+            .text(function (d) {
+                return (d.value > 1000) ? d.breed  : '';
+            })
+
         vis.simulation
-            .nodes(vis.group)
+            .nodes(vis.nodes)
             .on("tick", function (d) {
-                node
+                bubbles
                     .attr("cx", d => d.x)
                     .attr("cy", d => d.y)
-            });
-        
-        node.on("mouseover", (event, d) => {
+                labels
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y)
+                labels1
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y)
+            })
+            .restart();
+
+        bubbles.on("mouseover", (event, d) => {
             d3.select('#tooltip')
-              .style('display', 'block')
-              .style("left", (event.pageX +20) + "px")
-              .style("top", (event.pageY) + "px")
-              .html(`
+                .style('display', 'block')
+                .style("left", (event.pageX + 20) + "px")
+                .style("top", (event.pageY) + "px")
+                .html(`
               <div class='tooltip-title'>${d.type}: ${d.breed}</div>
                 <div> ${d.value} </div>
             `);
-          }) 
-        .on("mouseleave", () => {
-            d3.select('#tooltip').style('display', 'none');
-          });
-        
+        })
+            .on("mouseleave", () => {
+                d3.select('#tooltip').style('display', 'none');
+            });
+
 
         // What happens when a circle is dragged?
         function dragstarted(event, d) {
@@ -128,24 +172,6 @@ class BubbleChart {
             d.fx = null;
             d.fy = null;
         }
-
-
-        // Apply these forces to the nodes and update their positions.
-        // Once the force algorithm is happy with positions ('alpha' value is low enough), simulations will stop.
-
-
-        // Add textLabel
-        // vis.chart.selectAll('.text')
-        //     .data(vis.filteredData, d => d.id)
-        //     .join('text')
-        //     .attr('class', 'text')
-        //     .text(d => {
-        //         if (d.label == 1 || vis.selectLeader.includes(d.id)) {
-        //             return d.leader
-        //         }
-        //     })
-        //     .attr('transform',
-        //         d => `translate(${vis.xScale(d.start_year)}, ${vis.yScale(d.start_age)}) rotate(-20)`);
 
     }
 }
