@@ -12,6 +12,7 @@ class BarChart {
       margin: _config.margin || { top: 20, right: 20, bottom: 20, left: 40 },
     };
     this.data = _data;
+    this.selectedCategories = [];
     this.initVis();
   }
 
@@ -24,12 +25,12 @@ class BarChart {
       .attr("width", vis.config.containerWidth)
       .attr("height", vis.config.containerHeight);
 
-    vis.chart = vis.svg
-      .append("g")
-      .attr(
-        "transform",
-        `translate(${vis.config.margin.left},${vis.config.margin.top})`
-      );
+
+    vis.chartArea = vis.svg.append('g')
+      .attr('transform', `translate(${vis.config.margin.left},${vis.config.margin.top})`);
+
+    vis.chart = vis.chartArea
+      .append("g");
 
     vis.width =
       vis.config.containerWidth -
@@ -42,18 +43,24 @@ class BarChart {
 
     vis.yScale = d3.scaleLinear().range([vis.height, 0]);
 
+    vis.yScaleR = d3.scaleLinear().range([vis.height, 0]);
+
     vis.xScale = d3.scaleBand().range([0, vis.width]).padding(0.1);
 
     vis.xAxis = d3
       .axisBottom(vis.xScale)
-      .tickSizeOuter(0)
-      .tickFormat(d3.format("d"));
+      .ticks(["Baby", "Young", "Mature", "Elder"]);
+    // .tickSizeOuter(0)
+    // .tickFormat(d3.format("d"));
 
     vis.yAxis = d3
       .axisLeft(vis.yScale)
       .ticks(5)
-      .tickSize(-vis.width)
       .tickSizeOuter(0)
+      .tickFormat(d3.format("d"));
+
+    vis.yAxisR = d3.axisRight(vis.yScaleR)
+      .ticks(5)
       .tickFormat(d3.format("d"));
 
     vis.xAxisG = vis.chart
@@ -63,13 +70,25 @@ class BarChart {
 
     vis.yAxisG = vis.chart.append("g").attr("class", "axis y-axis");
 
+    vis.yAxisGR = vis.chart.append('g')
+      .attr('class', 'axis y-axis')
+      .attr("transform", "translate(" + vis.width + " ,0)");
+
     vis.svg
       .append("text")
       .attr("class", "axis-title")
       .attr("x", 0)
       .attr("y", 0)
       .attr("dy", "12")
-      .text("Time in Shelter (Days) / Age (Years)");
+      .text("Count / Age (Years)");
+
+    // Append right y axis title
+    vis.svg.append('text')
+      .attr('class', 'axis-title')
+      .attr('x', vis.width - 80)
+      .attr('y', 0)
+      .attr('dy', '12')
+      .text('Time in Shelter (Days)');
   }
 
   calculateAgeCounts() {
@@ -78,15 +97,16 @@ class BarChart {
     let ageCounts = {};
 
     vis.data.forEach((d) => {
-      const age = d.age_upon_outcome;
+      const age = d.age_group;
       const timeInShelter = d.time_in_shelter;
 
       if (!ageCounts[age]) {
-        ageCounts[age] = { age, total: 0, count: 0 };
+        ageCounts[age] = { age, total: 0, count: 0, totalAge: 0 };
       }
 
       ageCounts[age].total += timeInShelter;
       ageCounts[age].count += 1;
+      ageCounts[age].totalAge += d.age_upon_outcome;
     });
 
     return Object.values(ageCounts);
@@ -96,27 +116,30 @@ class BarChart {
     // Prepare data and scales
     let vis = this;
 
-    vis.xValue = (d) => d.age_upon_outcome;
-    vis.yValue = (d) => d.time_in_shelter;
+    vis.xValue = (d) => d.age;
+    vis.yValue = (d) => d.count;
+    vis.yValueR = (d) => d.average;
 
     const ageCounts = vis.calculateAgeCounts();
 
     ageCounts.forEach((d) => {
       d.average = d.total / d.count;
+      d.ageAvg = d.totalAge / d.count;
     });
 
     const maxAverage = d3.max(ageCounts, (d) => d.average);
+
 
     // Sort the unique age values in ascending order
     const sortedAges = Array.from(new Set(vis.data.map(vis.xValue))).sort(
       (a, b) => a - b
     );
 
-    // Set the xScale domain using the sorted age values
-    vis.xScale.domain(sortedAges);
-    vis.yScale.domain([0, maxAverage]);
-
+    vis.xScale.domain(["Baby", "Young", "Mature", "Elder"]);
+    vis.yScale.domain([0, d3.max(ageCounts, vis.yValue)]);
+    vis.yScaleR.domain([0, d3.max(ageCounts, vis.yValueR) + 10]);
     vis.renderVis(ageCounts);
+
   }
 
   renderVis(ageCounts) {
@@ -130,25 +153,41 @@ class BarChart {
       .data(ageCounts)
       .join("rect")
       .attr("class", "bar")
-      .attr("x", (d) => vis.xScale(d.age))
-      .attr("y", (d) => vis.yScale(d.average))
+      .attr("x", (d) => vis.xScale(vis.xValue(d)))
+      .attr("y", (d) => vis.yScale(vis.yValue(d)))
       .attr("width", vis.xScale.bandwidth())
-      .attr("height", (d) => vis.height - vis.yScale(d.average))
-      .attr("fill", (d) => colorScale(d.age))
+      .attr("height", (d) => vis.height - vis.yScale(vis.yValue(d)))
+      .attr("fill", (d) => colorScale(vis.yValue(d)))
       .on("mouseover", (event, d) => {
         d3.select("#tooltip")
           .style("display", "block")
           .style("left", event.pageX + 20 + "px")
           .style("top", event.pageY + "px")
           .html(
-            `Age: ${d.age}<br>Avg Time in Shelter: ${d.average.toFixed(2)} days`
+            `Average Age: ${d.ageAvg.toFixed(2)}  <br> Count: ${vis.yValue(d)} <br> Avg Time in Shelter: ${d.average.toFixed(2)} days`
           );
       })
       .on("mouseleave", () => {
         d3.select("#tooltip").style("display", "none");
       });
 
-    vis.xAxisG.call(vis.xAxis);
-    vis.yAxisG.call(vis.yAxis);
+    vis.chart.selectAll("path")
+      .data([ageCounts])
+      .join(
+        enter => enter.append("path").attr("class", "line")
+          .attr("fill", "none")
+          .attr("stroke", "black")
+          .attr("stroke-width", 5),
+        update => update,
+        exit => exit.remove()
+      )
+      .attr("d", d3.line()
+        .x(function (d) { return vis.xScale(d.age) + vis.xScale.bandwidth() / 2 })
+        .y(function (d) { return vis.yScaleR(d.average) })
+      );
+
+    vis.xAxisG.call(vis.xAxis).call(g => g.select('.domain').remove());;
+    vis.yAxisG.call(vis.yAxis).call(g => g.select('.domain').remove());;
+    vis.yAxisGR.call(vis.yAxisR).call(g => g.select('.domain').remove());;
   }
 }

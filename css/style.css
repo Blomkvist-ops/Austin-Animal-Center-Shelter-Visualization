@@ -1,8 +1,61 @@
 body {
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 13px;
-    padding: 30px;
-    background: #f7f7f7;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  padding: 30px;
+  background: #f7f7f7;
+}
+
+.legend {
+  margin: 0 0;
+  list-style: none;
+  padding-right: 400px;
+  display: grid;
+  grid-template-columns: auto auto;
+}
+
+.legend-btn {
+  display: inline-block;
+  margin: 0 20px 0 0;
+  cursor: pointer;
+  transition: all ease-in-out 200ms;
+}
+
+.legend-btn.inactive {
+  opacity: 0.5;
+}
+
+.legend-btn:hover.legend-btn.inactive:hover {
+  opacity: 0.7;
+}
+
+.legend-symbol {
+  width: 12px;
+  height: 12px;
+  margin-right: 10px;
+  display: inline-block;
+}
+
+.circle {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid;
+}
+
+.legend-btn[data-category="Cat"] .legend-symbol {
+  background: #e49444;
+}
+
+.legend-btn[data-category="Dog"] .legend-symbol {
+  background: #5778a4;
+}
+
+.legend-btn[data-category="Bird"] .legend-symbol {
+  background: #d1615d;
+}
+
+.legend-btn[data-category="Other"] .legend-symbol {
+  background: #6a9f58;
 }
 
 .bubble:hover {
@@ -12,32 +65,20 @@ body {
 
 
 #tooltip {
-    position: absolute;
-    display: none;
-    background: #fff;
-    box-shadow: 3px 3px 3px 0px rgb(92 92 92 / 0.5);
-    border: 1px solid #ddd;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 8px;
-    min-width: 100px;
-    color: #333;
-  }
-  .tooltip-title {
-    color: #000;
-    font-size: 12px;
-    font-weight: 500;
-  }
-
-.bar:hover {
-    stroke: #000;
-}
-
-line {
-  color: #a4a5c3;
-  opacity: 0.5;
-}
-
-.axis path {
+  position: absolute;
   display: none;
+  background: #fff;
+  box-shadow: 3px 3px 3px 0px rgb(92 92 92 / 0.5);
+  border: 1px solid #ddd;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px;
+  min-width: 100px;
+  color: #333;
+}
+
+.tooltip-title {
+  color: #000;
+  font-size: 12px;
+  font-weight: 500;
 }

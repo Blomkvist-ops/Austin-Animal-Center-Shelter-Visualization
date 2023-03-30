@@ -11,27 +11,54 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       d.age_upon_outcome = years;
     }
 
+    if (d.age_upon_outcome < 3) d.age_group = 'Baby';
+    else if (d.age_upon_outcome < 5) d.age_group = 'Young';
+    else if (d.age_upon_outcome < 10) d.age_group = 'Mature';
+    else d.age_group = 'Elder';
+
+
     // Preprocess days
     const days = parseInt(d.time_in_shelter.split(" ")[0]);
     d.time_in_shelter = days;
-
-    //     d.uid = +d.animal_id_intake;
-    //     d.intake_number = +d.intake_number;
-    //     d.animal_type = +d.animal_type;
-    //     d.intake_condition = +d.intake_condition;
-    //     d.intake_type = +d.intake_type;
-    //     d.intake_age = +d.age_upon_intake_age_group;
-    //     d.intake_date = parseTime(d.intake_monthyear);
-    //     d.time_in_shelter_days = +d.time_in_shelter_days;
-    //     d.outcome_type = +d.outcome_type;
-    //     d.outcome_age = +d.age_upon_outcome_age_group;
-    //     d.outcome_date = parseTime(d.outcome_monthyear);
-    //     d.breed = +d.breed;
   });
 
   let bubble = new BubbleChart({ parentElement: "#bubble-chart" }, data);
-  bubble.updateVis();
-
   let barChart = new BarChart({ parentElement: "#bar-chart" }, data);
+  bubble.updateVis();
   barChart.updateVis();
+
+  d3.selectAll('.legend-btn').on('click', function (event) {
+
+    // toggle status
+    d3.select(this).classed('inactive', !d3.select(this).classed('inactive'));
+
+    let selected = [];
+
+    d3.selectAll('.legend-btn:not(.inactive)').each(function (d) {
+      selected.push(d3.select(this).attr('data-category'));
+    });
+
+    bubble.data = data.filter(d => {
+      return selected.includes(d.animal_type)
+    });
+
+    barChart.data = data.filter(d => {
+      return selected.includes(d.animal_type)
+    });
+
+    // All categories are shown when no categories are active
+    if (selected.length == 0) {
+      bubble.data = data;
+      barChart.data = data;
+    }
+    console.log(bubble.data);
+
+    bubble.updateVis();
+    barChart.updateVis();
+
+  });
+
+
 });
+
+
