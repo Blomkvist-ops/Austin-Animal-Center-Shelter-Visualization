@@ -171,17 +171,20 @@ class BarChart {
         d3.select("#tooltip").style("display", "none");
       });
 
-    var line = vis.chart.append("path")
-      .datum(ageCounts)
-      .attr("fill", "none")
-      .attr("stroke", "black")
-      .attr("stroke-width", 5)
+    vis.chart.selectAll("path")
+      .data([ageCounts])
+      .join(
+        enter => enter.append("path").attr("class", "line")
+          .attr("fill", "none")
+          .attr("stroke", "black")
+          .attr("stroke-width", 5),
+        update => update,
+        exit => exit.remove()
+      )
       .attr("d", d3.line()
         .x(function (d) { return vis.xScale(d.age) + vis.xScale.bandwidth() / 2 })
         .y(function (d) { return vis.yScaleR(d.average) })
       );
-    
-    line.exit().remove();
 
     vis.xAxisG.call(vis.xAxis).call(g => g.select('.domain').remove());;
     vis.yAxisG.call(vis.yAxis).call(g => g.select('.domain').remove());;

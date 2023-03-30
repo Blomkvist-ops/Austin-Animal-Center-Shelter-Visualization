@@ -85,8 +85,6 @@ class BubbleChart {
             y: Math.random() * 800
         }))
 
-        console.log(vis.nodes);
-
         vis.renderVis();
     }
 
@@ -94,15 +92,13 @@ class BubbleChart {
     renderVis() {
         let vis = this;
 
-        const elements = vis.chart.selectAll('.elements')
-            .data(vis.nodes, d => d.breed);
-
-        elements.exit().remove();
-
-        const bubblesEnter = elements.enter().append('circle')
-            .classed('bubble', true);
-
-        bubblesEnter.merge(elements)
+        const bubbles = vis.chart.selectAll(".bubble")
+            .data(vis.nodes)
+            .join(
+                enter => enter.append("circle").attr("class", "bubble"),
+                update => update,
+                exit => exit.remove()
+            )
             .attr('r', d => d.radius)
             .attr('fill', d => vis.color(d.type))
             .on("mouseover", (event, d) => {
@@ -111,9 +107,9 @@ class BubbleChart {
                     .style("left", (event.pageX + 20) + "px")
                     .style("top", (event.pageY) + "px")
                     .html(`
-                  <div class='tooltip-title'>${d.type}: ${d.breed}</div>
-                    <div> ${d.value} </div>
-                `);
+            <div class='tooltip-title'>${d.type}: ${d.breed}</div>
+              <div> ${d.value} </div>
+          `);
             })
             .on("mouseleave", () => {
                 d3.select('#tooltip').style('display', 'none');
@@ -138,36 +134,44 @@ class BubbleChart {
             d.fy = null;
         }
 
-        const labelsEnter = elements.enter().append('text');
-
-        labelsEnter.merge(elements)
-            .attr('dy', '.3em')
-            .style('text-anchor', 'middle')
-            .style('font-size', 12)
+        const label = vis.chart.selectAll(".label")
+            .data(vis.nodes)
+            .join(
+                enter => enter.append("text").attr("class", "label")
+                    .attr('dy', '.3em')
+                    .style('text-anchor', 'middle')
+                    .style('font-size', 12),
+                update => update,
+                exit => exit.remove()
+            )
             .text(function (d) {
-                return (d.value > 1000) ? ((d.value / vis.data.length) * 100).toFixed(2) + "%" : '';
+                return ((d.value / vis.data.length) * 100 > 1) ? ((d.value / vis.data.length) * 100).toFixed(2) + "%" : '';
             })
 
-        const labels1Enter = elements.enter().append('text');
-
-        labels1Enter.merge(elements)
-            .attr('dy', '2em')
-            .style('text-anchor', 'middle')
-            .style('font-size', 7)
+        const label1 = vis.chart.selectAll(".label1")
+            .data(vis.nodes)
+            .join(
+                enter => enter.append("text").attr("class", "label1")
+                    .attr('dy', '2em')
+                    .style('text-anchor', 'middle')
+                    .style('font-size', 7),
+                update => update,
+                exit => exit.remove()
+            )
             .text(function (d) {
-                return (d.value > 1000) ? d.breed : '';
+                return ((d.value / vis.data.length) * 100 > 1) ? d.breed : '';
             })
 
         vis.simulation
             .nodes(vis.nodes)
             .on("tick", function (d) {
-                bubblesEnter
+                bubbles
                     .attr("cx", d => d.x)
                     .attr("cy", d => d.y)
-                labelsEnter
+                label
                     .attr("x", d => d.x)
                     .attr("y", d => d.y)
-                labels1Enter
+                label1
                     .attr("x", d => d.x)
                     .attr("y", d => d.y)
             })
@@ -176,3 +180,4 @@ class BubbleChart {
 
     }
 }
+

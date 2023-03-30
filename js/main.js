@@ -38,8 +38,6 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       selected.push(d3.select(this).attr('data-category'));
     });
 
-    console.log(selected);
-
     bubble.data = data.filter(d => {
       return selected.includes(d.animal_type)
     });
@@ -53,6 +51,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       bubble.data = data;
       barChart.data = data;
     }
+    console.log(bubble.data);
 
     bubble.updateVis();
     barChart.updateVis();
