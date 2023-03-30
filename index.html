@@ -9,21 +9,33 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;700&display=swap" rel="stylesheet">
 </head>
 
-<body>
-    <h1>CPSC 447</h1>
-    <div class="source">
-        Source: Data from <a
-            href="https://www.kaggle.com/datasets/aaronschlegel/austin-animal-center-shelter-intakes-and-outcomes?resource=download">kaggle.com</a>
-    </div>
+  <body>
+    <h1>Austin Animal Shelter Intake & Outcome</h1>
+    <!-- <div class="source">
+      Source: Data from
+      <a
+        href="https://www.kaggle.com/datasets/aaronschlegel/austin-animal-center-shelter-intakes-and-outcomes?resource=download"
+        >kaggle.com</a
+      >
+    </div> -->
+
+    <ul class="legend">
+      <li class="legend-btn inactive" data-category="Cat"><span class="legend-symbol circle"></span>Cat</li>
+      <li class="legend-btn inactive" data-category="Dog"><span class="legend-symbol circle"></span>Dog</li>
+      <li class="legend-btn inactive" data-category="Bird"><span class="legend-symbol circle"></span>Bird</li>
+      <li class="legend-btn inactive" data-category="Others"><span class="legend-symbol circle"></span>Others</li>
+  </ul>
 
     <div>
         <svg id="bubble-chart"></svg>
+        <svg id="bar-chart"></svg>
     </div>
 
     <div id="tooltip"></div>
 
     <script src="js/d3.v6.min.js"></script>
     <script src="js/bubble.js"></script>
+    <script src="js/barChart.js"></script>
     <script src="js/main.js"></script>
 
 </body>
