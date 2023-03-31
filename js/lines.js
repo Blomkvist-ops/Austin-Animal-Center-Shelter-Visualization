@@ -43,7 +43,7 @@ class Line {
 
         // Initialize axes
         vis.xAxis = d3.axisBottom(vis.xScale)
-            .ticks(6)
+            .ticks(10)
             .tickFormat(d => {
                 return formatDate(new Date(d))
             });
@@ -82,7 +82,7 @@ class Line {
 
         // get intake data group by date
         let groupByDate = d3.group(this.data, g => {
-            return g.datetime.substring(0, 4);
+            return g.datetime.substring(0, 7);
         });
 
         vis.intakeArr = Array.from(groupByDate.entries());
@@ -90,17 +90,15 @@ class Line {
             e[1] = e[1].length
         })
 
-
         // get outcome data group by date
         let groupByDate2 = d3.group(this.data2, g => {
-            return g.datetime.substring(0, 4);
+            return g.datetime.substring(0, 7);
         });
 
         vis.outcomeArr = Array.from(groupByDate2.entries());
         vis.outcomeArr.forEach(e => {
             e[1] = e[1].length
         })
-
 
         // get net data
         let groupByDate3 = new Map()
@@ -125,7 +123,7 @@ class Line {
 
 
         // const parseTime = d3.timeParse("%Y-%m-%d")
-        const parseTime = d3.timeParse("%Y")
+        const parseTime = d3.timeParse("%Y-%m")
         vis.netArr = Array.from(groupByDate3.entries());
         let groupData = [];
         vis.netArr.forEach(e => {
@@ -138,15 +136,34 @@ class Line {
             })
         })
 
-        vis.testArr = []
-        vis.intakeArr.forEach(e => {
-
-            vis.testArr.push({"year":parseTime(e[0]), "value": e[1]})
+        vis.sortedNet = []
+        vis.netArr.forEach(e => {
+            vis.sortedNet.push({"year":parseTime(e[0]), "value": e[1]})
         })
-        // console.log(vis.testArr)
 
-        vis.xScale.domain(d3.extent(groupData, function(d) { return parseTime(d.key); }));
-        vis.yScale.domain([0, 30000]);
+        vis.sortedNet.sort(function(a,b){return a.year-b.year})
+
+        vis.intakeArr.sort(function(a, b){return parseTime(a[0]) - parseTime(b[0])})
+        // console.log(vis.intakeArr)
+        // vis.xScale.domain(d3.extent(groupData, function(d) { return parseTime(d.key); }));
+
+        let mygroup = [0,1]
+        vis.stackedData = d3.stack()
+            .keys(mygroup)
+            .value(function(d, key){
+                // console.log(d.values[key].val)
+                return d.values[key].val
+            })(groupData)
+
+
+        this.stackedData.forEach(arr => {
+            arr.sort(function(a,b) {
+                return parseTime(a.data.key) - parseTime(b.data.key)})
+        })
+
+
+        vis.xScale.domain([new Date('2012-12-01'), new Date('2018-10-01')]);
+        vis.yScale.domain([0, 4800]);
 
         vis.renderVis();
     }
@@ -154,17 +171,46 @@ class Line {
 
     renderVis() {
         let vis = this;
+        const parseTime = d3.timeParse("%Y-%m")
 
-        console.log(vis.testArr)
-        // Add the line
-        vis.svg.append("path")
-            .datum(vis.testArr)
+
+        //
+        // const circles = vis.svg.selectAll('.point')
+        //     .data(vis.testArr)
+        //     .join('circle')
+        //     .attr('class', 'point')
+        //     .attr('r', 4)
+        //     .attr('cy', d => vis.yScale(d.value))
+        //     .attr('cx', d => vis.xScale(d.year))
+        //     .attr('fill', "black")
+
+        vis.stakcedline = vis.svg
+            .selectAll(".lines")
+            // .append("g")
+            .data(vis.stackedData)
+            .enter()
+            // .attr('class', d => 'data-path type-' + d.key)
+            .append("path")
+            .style("fill", function(d) { name = vis.keys[d.key] ;  return vis.colorScale(name); })
+            .attr("d", d3.area()
+                .x(function(d, i) {
+                    console.log(d)
+                    return vis.xScale(parseTime(d.data.key));
+                })
+                .y0(function(d) {
+                    return vis.yScale(d[0]);
+                })
+                .y1(function(d) { return vis.yScale(d[1]); })
+            )
+
+        //Add the line
+        const lines = vis.svg.append("path")
+            .datum(vis.sortedNet)
             .attr("fill", "none")
-            .attr("stroke", "steelblue")
-            .attr("stroke-width", 3)
+            .attr("stroke", "black")
+            .attr("stroke-width", 5)
             .attr("d", d3.line()
                 .x(function(d) {
-                    //console.log(d)
                     return vis.xScale(d.year) })
                 .y(function(d) { return vis.yScale(d.value) })
             )
@@ -193,5 +239,5 @@ function formatDate(date) {
     if (day.length < 2)
         day = '0' + day;
 
-    return [year].join('-');
+    return [year, month].join('-');
 }
