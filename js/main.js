@@ -59,3 +59,11 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
     barChart.updateVis();
   });
 });
+
+
+d3.csv('data/aac_intakes.csv').then(data => {
+  d3.csv('data/aac_outcomes.csv').then(data2 => {
+    let lines = new Line({ parentElement: '#line-chart'}, data, data2);
+    lines.updateVis();
+  })
+});
