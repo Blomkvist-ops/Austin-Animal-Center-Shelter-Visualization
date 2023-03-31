@@ -7,9 +7,9 @@ class Line {
     constructor(_config, _data, _data2) {
         this.config = {
             parentElement: _config.parentElement,
-            containerWidth: 800,
+            containerWidth: 900,
             containerHeight: 500,
-            margin: { top: 15, right: 10, bottom: 70, left: 60 },
+            margin: { top: 15, right: 60, bottom: 70, left: 60 },
             tooltipPadding: 15,
         }
         this.data = _data;
@@ -41,6 +41,9 @@ class Line {
         vis.yScale = d3.scaleLinear()
             .range([vis.height, 0]);
 
+        vis.yScaleR = d3.scaleLinear()
+            .range([vis.height, 0]);
+
         // Initialize axes
         vis.xAxis = d3.axisBottom(vis.xScale)
             .ticks(10)
@@ -50,6 +53,10 @@ class Line {
 
         vis.yAxis = d3.axisLeft(vis.yScale)
             .tickPadding(10);
+
+        vis.yAxisR = d3.axisRight(vis.yScaleR)
+            .ticks(5)
+            .tickFormat(d3.format("d"));
 
         // Define size of SVG drawing area
         vis.svg = d3.select(vis.config.parentElement)
@@ -69,11 +76,25 @@ class Line {
         vis.yAxisG = vis.chart.append('g')
             .attr('class', 'axis y-axis');
 
+        vis.yAxisGR = vis.chart.append('g')
+            .attr('class', 'axis y-axis')
+            .attr("transform", "translate(" + vis.width + " ,0)");
+
+        // Append both axis titles
+        vis.chart.append('text')
+            .attr('class', 'axis-title')
+            .attr('y', vis.height -15)
+            .attr('x', vis.width + 15)
+            .attr('dy', '.71em')
+            .style('text-anchor', 'end')
+            .text('GDP per Capita(US$)');
+
         vis.svg.append('text')
             .attr('class', 'axis-title')
             .attr('x', 0)
-            .attr('y', 0)
-            .attr('dy', '.71em');
+            .attr('y', 15)
+            .attr('dy', '.71em')
+            .text('Age');
 
     }
 
@@ -143,9 +164,12 @@ class Line {
 
         vis.sortedNet.sort(function(a,b){return a.year-b.year})
 
-        vis.intakeArr.sort(function(a, b){return parseTime(a[0]) - parseTime(b[0])})
-        // console.log(vis.intakeArr)
-        // vis.xScale.domain(d3.extent(groupData, function(d) { return parseTime(d.key); }));
+        vis.intakeArr.sort(function(a, b){
+            return parseTime(a[0]) - parseTime(b[0])}
+        )
+        vis.outcomeArr.sort(function(a, b){
+            return parseTime(a[0]) - parseTime(b[0])}
+        )
 
         let mygroup = [0,1]
         vis.stackedData = d3.stack()
@@ -155,15 +179,16 @@ class Line {
                 return d.values[key].val
             })(groupData)
 
-
+        // sort stacked data to get correct stacked line chart
         this.stackedData.forEach(arr => {
             arr.sort(function(a,b) {
                 return parseTime(a.data.key) - parseTime(b.data.key)})
         })
 
 
-        vis.xScale.domain([new Date('2012-12-01'), new Date('2018-10-01')]);
+        vis.xScale.domain([new Date('2013-05-01'), new Date('2017-12-01')]);
         vis.yScale.domain([0, 4800]);
+        vis.yScaleR.domain([-1500, 1500]);
 
         vis.renderVis();
     }
@@ -194,7 +219,6 @@ class Line {
             .style("fill", function(d) { name = vis.keys[d.key] ;  return vis.colorScale(name); })
             .attr("d", d3.area()
                 .x(function(d, i) {
-                    console.log(d)
                     return vis.xScale(parseTime(d.data.key));
                 })
                 .y0(function(d) {
@@ -212,7 +236,7 @@ class Line {
             .attr("d", d3.line()
                 .x(function(d) {
                     return vis.xScale(d.year) })
-                .y(function(d) { return vis.yScale(d.value) })
+                .y(function(d) { return vis.yScaleR(d.value) })
             )
 
         vis.xAxisG
@@ -221,6 +245,10 @@ class Line {
 
         vis.yAxisG
             .call(vis.yAxis)
+            .call(g => g.select('.domain').remove())
+
+        vis.yAxisGR
+            .call(vis.yAxisR)
             .call(g => g.select('.domain').remove())
 
     }
