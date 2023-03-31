@@ -11,6 +11,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       d.age_upon_outcome = years;
     }
 
+    // Preprocess age group
     if (d.age_upon_outcome < 3) d.age_group = "Baby";
     else if (d.age_upon_outcome < 5) d.age_group = "Young";
     else if (d.age_upon_outcome < 10) d.age_group = "Mature";
@@ -21,6 +22,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
     d.time_in_shelter = days;
   });
 
+  // create graphs
   let bubble = new BubbleChart({ parentElement: "#bubble-chart" }, data);
   let barChart = new BarChart({ parentElement: "#bar-chart" }, data);
   let heatMap = new HeatMap({ parentElement: "#heat-map" }, data);
@@ -57,6 +59,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
   });
 });
 
+// create line chart
 d3.csv("data/aac_intakes.csv").then((data) => {
   d3.csv("data/aac_outcomes.csv").then((data2) => {
     let lines = new Line({ parentElement: "#line-chart" }, data, data2);

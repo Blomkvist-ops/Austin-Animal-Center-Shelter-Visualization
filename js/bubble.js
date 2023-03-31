@@ -7,8 +7,8 @@ class BubbleChart {
   constructor(_config, _data) {
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: 600,
-      containerHeight: 600,
+      containerWidth: 500,
+      containerHeight: 500,
       margin: { top: 15, right: 10, bottom: 10, left: 0 },
       tooltipPadding: 15,
       colors: ["#d92929", "#f0d773", "#ba7f4e", "#8C6239", "#6e4141"],
@@ -39,8 +39,6 @@ class BubbleChart {
       vis.config.margin.top -
       vis.config.margin.bottom;
 
-    // Append group element that will contain our actual chart
-    // and position it according to the given margin config
     vis.chartArea = vis.svg
       .append("g")
       .attr(
@@ -106,6 +104,7 @@ class BubbleChart {
   updateVis() {
     let vis = this;
 
+    // create group of data needed for bubble chart
     vis.group = Array.from(
       d3.rollup(
         vis.data,
@@ -124,6 +123,7 @@ class BubbleChart {
 
     vis.size.domain(d3.extent(vis.group, (d) => d.value));
 
+    // create nodes needed with size data
     vis.nodes = vis.group.map((d) => ({
       ...d,
       radius: vis.size(d.value),
@@ -137,6 +137,7 @@ class BubbleChart {
   renderVis() {
     let vis = this;
 
+    // draw nodes
     const bubbles = vis.chart
       .selectAll(".bubble")
       .data(vis.nodes)
@@ -168,6 +169,7 @@ class BubbleChart {
           .on("end", dragended)
       );
 
+    // drag function
     function dragstarted(event, d) {
       if (!event.active) vis.simulation.alphaTarget(0.03).restart();
       d.fx = d.x;
@@ -183,6 +185,7 @@ class BubbleChart {
       d.fy = null;
     }
 
+    // label first line
     const label = vis.chart
       .selectAll(".label")
       .data(vis.nodes)
@@ -203,6 +206,7 @@ class BubbleChart {
           : "";
       });
 
+    // label second line
     const label1 = vis.chart
       .selectAll(".label1")
       .data(vis.nodes)
@@ -221,6 +225,7 @@ class BubbleChart {
         return (d.value / vis.data.length) * 100 > 1 ? d.breed : "";
       });
 
+    // simulation function for nodes moving
     vis.simulation
       .nodes(vis.nodes)
       .on("tick", function (d) {

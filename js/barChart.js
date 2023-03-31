@@ -4,7 +4,7 @@ class BarChart {
   constructor(_config, _data) {
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: 450,
+      containerWidth: 600,
       containerHeight: 500,
       margin: _config.margin || { top: 20, right: 125, bottom: 100, left: 50 },
       colors: ["#8C6239", "#AE6427", "#E5CD6C", "#F9F3B9"],
@@ -103,6 +103,7 @@ class BarChart {
     return "Elder";
   }
 
+  // get age counts
   calculateAgeCounts() {
     let vis = this;
 
@@ -149,6 +150,7 @@ class BarChart {
     // Bind data to visual elements, update axes
     let vis = this;
 
+    // bar view
     vis.chart
       .selectAll(".bar")
       .data(ageCounts)
@@ -180,6 +182,8 @@ class BarChart {
         d3.select(".axis-title.left").style("font-weight", "normal");
       });
 
+
+    // line view
     vis.chart
       .selectAll("path")
       .data([ageCounts])
