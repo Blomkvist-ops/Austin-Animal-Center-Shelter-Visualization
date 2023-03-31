@@ -36,6 +36,10 @@ line {
   opacity: 0.5;
 }
 
+.line {
+  stroke: #2f1313;
+}
+
 .legend {
   margin: 0 0;
   list-style: none;
@@ -74,19 +78,19 @@ line {
 }
 
 .legend-btn[data-category="Cat"] .legend-symbol {
-  background: #e49444;
+  background: #8c6239;
 }
 
 .legend-btn[data-category="Dog"] .legend-symbol {
-  background: #5778a4;
+  background: #ae6427;
 }
 
 .legend-btn[data-category="Bird"] .legend-symbol {
-  background: #d1615d;
+  background: #f9f3b9;
 }
 
 .legend-btn[data-category="Other"] .legend-symbol {
-  background: #6a9f58;
+  background: #e5cd6c;
 }
 
 .bubble:hover {

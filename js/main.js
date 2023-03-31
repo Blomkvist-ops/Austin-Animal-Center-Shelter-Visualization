@@ -11,11 +11,10 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       d.age_upon_outcome = years;
     }
 
-    if (d.age_upon_outcome < 3) d.age_group = 'Baby';
-    else if (d.age_upon_outcome < 5) d.age_group = 'Young';
-    else if (d.age_upon_outcome < 10) d.age_group = 'Mature';
-    else d.age_group = 'Elder';
-
+    if (d.age_upon_outcome < 3) d.age_group = "Baby";
+    else if (d.age_upon_outcome < 5) d.age_group = "Young";
+    else if (d.age_upon_outcome < 10) d.age_group = "Mature";
+    else d.age_group = "Elder";
 
     // Preprocess days
     const days = parseInt(d.time_in_shelter.split(" ")[0]);
@@ -29,23 +28,22 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
   barChart.updateVis();
   heatMap.updateVis();
 
-  d3.selectAll('.legend-btn').on('click', function (event) {
-
+  d3.selectAll(".legend-btn").on("click", function (event) {
     // toggle status
-    d3.select(this).classed('inactive', !d3.select(this).classed('inactive'));
+    d3.select(this).classed("inactive", !d3.select(this).classed("inactive"));
 
     let selected = [];
 
-    d3.selectAll('.legend-btn:not(.inactive)').each(function (d) {
-      selected.push(d3.select(this).attr('data-category'));
+    d3.selectAll(".legend-btn:not(.inactive)").each(function (d) {
+      selected.push(d3.select(this).attr("data-category"));
     });
 
-    bubble.data = data.filter(d => {
-      return selected.includes(d.animal_type)
+    bubble.data = data.filter((d) => {
+      return selected.includes(d.animal_type);
     });
 
-    barChart.data = data.filter(d => {
-      return selected.includes(d.animal_type)
+    barChart.data = data.filter((d) => {
+      return selected.includes(d.animal_type);
     });
 
     // All categories are shown when no categories are active
@@ -59,10 +57,9 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
   });
 });
 
-
-d3.csv('data/aac_intakes.csv').then(data => {
-  d3.csv('data/aac_outcomes.csv').then(data2 => {
-    let lines = new Line({ parentElement: '#line-chart'}, data, data2);
+d3.csv("data/aac_intakes.csv").then((data) => {
+  d3.csv("data/aac_outcomes.csv").then((data2) => {
+    let lines = new Line({ parentElement: "#line-chart" }, data, data2);
     lines.updateVis();
-  })
+  });
 });

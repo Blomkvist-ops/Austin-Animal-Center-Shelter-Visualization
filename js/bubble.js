@@ -11,6 +11,7 @@ class BubbleChart {
       containerHeight: 600,
       margin: { top: 15, right: 10, bottom: 10, left: 0 },
       tooltipPadding: 15,
+      colors: ["#F9F3B9", "#E5CD6C", "#AE6427", "#8C6239", "#2F1313"],
     };
     this.data = _data;
     this.selectedCategories = [];
@@ -61,7 +62,12 @@ class BubbleChart {
     vis.color = d3
       .scaleOrdinal()
       .domain(["Dog", "Cat", "Bird", "Other"])
-      .range(d3.schemeTableau10);
+      .range([
+        vis.config.colors[2],
+        vis.config.colors[3],
+        vis.config.colors[0],
+        vis.config.colors[1],
+      ]);
 
     // Size scale for countries
     vis.size = d3.scaleLinear().range([15, 90]); // circle will be between 7 and 55 px wide
