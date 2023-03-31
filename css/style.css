@@ -1,6 +1,5 @@
 body {
   font-family: "Noto Sans JP", sans-serif;
-  font-family: "Noto Sans JP", sans-serif;
   font-size: 13px;
   padding: 30px;
   background: #f7f7f7;
@@ -41,7 +40,7 @@ line {
   margin: 0 0;
   list-style: none;
   padding-right: 400px;
-  display: grid;
+  /* display: grid; */
   grid-template-columns: auto auto;
 }
 
@@ -97,6 +96,12 @@ line {
 
 .axis path {
   display: none;
+}
+
+.axis text {
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 12px;
+  font-weight: bold;
 }
 
 .point {

@@ -7,7 +7,7 @@ class Line {
     constructor(_config, _data, _data2) {
         this.config = {
             parentElement: _config.parentElement,
-            containerWidth: 900,
+            containerWidth: 1100,
             containerHeight: 500,
             margin: { top: 15, right: 60, bottom: 70, left: 60 },
             tooltipPadding: 15,
@@ -33,7 +33,7 @@ class Line {
 
         vis.colorScale = d3.scaleOrdinal()
             .domain(vis.keys)
-            .range(['#e41a1c','#377eb8'])
+            .range(d3.schemeTableau10)
 
         vis.xScale = d3.scaleTime()
             .range([0, vis.width]);
@@ -55,7 +55,7 @@ class Line {
             .tickPadding(10);
 
         vis.yAxisR = d3.axisRight(vis.yScaleR)
-            .ticks(5)
+            .tickPadding(10)
             .tickFormat(d3.format("d"));
 
         // Define size of SVG drawing area
@@ -78,23 +78,23 @@ class Line {
 
         vis.yAxisGR = vis.chart.append('g')
             .attr('class', 'axis y-axis')
-            .attr("transform", "translate(" + vis.width + " ,0)");
+            .attr("transform", "translate(" + vis.width + " ,+15)");
 
         // Append both axis titles
         vis.chart.append('text')
             .attr('class', 'axis-title')
-            .attr('y', vis.height -15)
-            .attr('x', vis.width + 15)
+            .attr('y', 0)
+            .attr('x', vis.width + 60)
             .attr('dy', '.71em')
             .style('text-anchor', 'end')
-            .text('GDP per Capita(US$)');
+            .text('Net Number');
 
         vis.svg.append('text')
             .attr('class', 'axis-title')
             .attr('x', 0)
             .attr('y', 15)
             .attr('dy', '.71em')
-            .text('Age');
+            .text('Number of Intake/outcome');
 
     }
 

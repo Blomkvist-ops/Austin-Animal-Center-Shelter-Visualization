@@ -53,7 +53,6 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       bubble.data = data;
       barChart.data = data;
     }
-    console.log(bubble.data);
 
     bubble.updateVis();
     barChart.updateVis();

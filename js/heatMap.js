@@ -3,9 +3,9 @@ class HeatMap {
     // Initialize HeatMap object with the specified configuration and data
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: 600,
+      containerWidth: 700,
       containerHeight: 600,
-      margin: _config.margin || { top: 20, right: 100, bottom: 40, left: 50 },
+      margin: _config.margin || { top: 20, right: 100, bottom: 40, left: 70 },
     };
     this.data = _data;
     this.initVis();
