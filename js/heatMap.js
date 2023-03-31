@@ -6,6 +6,7 @@ class HeatMap {
       containerWidth: 700,
       containerHeight: 600,
       margin: _config.margin || { top: 20, right: 100, bottom: 40, left: 70 },
+      colors: ["#F9F3B9", "#E5CD6C", "#AE6427", "#8C6239", "#2F1313"],
     };
     this.data = _data;
     this.initVis();
@@ -39,7 +40,6 @@ class HeatMap {
 
     vis.xScale = d3.scaleBand().range([0, vis.width]).padding(0.05);
     vis.yScale = d3.scaleBand().range([0, vis.height]).padding(0.05);
-    vis.colorScale = d3.scaleQuantize().range(d3.schemeOranges[5]);
 
     vis.xAxis = d3.axisBottom(vis.xScale);
     vis.yAxis = d3.axisLeft(vis.yScale);
@@ -128,8 +128,7 @@ class HeatMap {
       .sort((b, a) => b.count - a.count)
       .map((data, index) => ({ ...data, order: index }));
 
-    const colorGroupCount = 5;
-    const groupSize = Math.ceil(orderedData.length / colorGroupCount);
+    const groupSize = Math.ceil(orderedData.length / vis.config.colors.length);
 
     // Create a color scale with 5 ordinal groups based on the order property of the mergedData array
     vis.colorScale = d3
@@ -137,10 +136,8 @@ class HeatMap {
       .domain(orderedData.map((d) => d.order))
       .range(
         d3
-          .range(colorGroupCount)
-          .flatMap((i) =>
-            d3.range(groupSize).map(() => d3.schemeOranges[colorGroupCount][i])
-          )
+          .range(vis.config.colors.length)
+          .flatMap((i) => d3.range(groupSize).map(() => vis.config.colors[i]))
       );
 
     vis.renderVis(orderedData);
@@ -180,13 +177,12 @@ class HeatMap {
       .attr("class", "legend")
       .attr("transform", `translate(${vis.width}, 0)`);
 
-    const colorGroupCount = 5;
-    const groupSize = Math.ceil(orderedData.length / colorGroupCount);
+    const groupSize = Math.ceil(orderedData.length / vis.config.colors.length);
     const legendData = d3
-      .range(colorGroupCount)
+      .range(vis.config.colors.length)
       .reverse()
       .map((i) => ({
-        color: d3.schemeOranges[colorGroupCount][i],
+        color: vis.config.colors[i],
         range: [
           orderedData.find((obj) => obj.order === i * groupSize).count,
           orderedData.find((obj) => obj.order === (i + 1) * groupSize - 1)

@@ -11,6 +11,7 @@ class Line {
             containerHeight: 500,
             margin: { top: 15, right: 60, bottom: 70, left: 60 },
             tooltipPadding: 15,
+            colors: ["#F9F3B9", "#E5CD6C", "#AE6427", "#8C6239", "#2F1313"],
         }
         this.data = _data;
         this.data2 = _data2;
@@ -33,7 +34,7 @@ class Line {
 
         vis.colorScale = d3.scaleOrdinal()
             .domain(vis.keys)
-            .range(d3.schemeTableau10)
+            .range([vis.config.colors[1], vis.config.colors[2]])
 
         vis.xScale = d3.scaleTime()
             .range([0, vis.width]);
@@ -257,15 +258,13 @@ class Line {
 }
 
 function formatDate(date) {
-    let d = new Date(date),
-        month = '' + (d.getMonth() + 1),
-        day = '' + d.getDate(),
-        year = d.getFullYear();
+  let d = new Date(date),
+    month = "" + (d.getMonth() + 1),
+    day = "" + d.getDate(),
+    year = d.getFullYear();
 
-    if (month.length < 2)
-        month = '0' + month;
-    if (day.length < 2)
-        day = '0' + day;
+  if (month.length < 2) month = "0" + month;
+  if (day.length < 2) day = "0" + day;
 
-    return [year, month].join('-');
+  return [year, month].join("-");
 }
