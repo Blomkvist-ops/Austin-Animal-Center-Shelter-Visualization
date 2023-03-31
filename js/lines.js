@@ -7,8 +7,8 @@ class Line {
     constructor(_config, _data, _data2) {
         this.config = {
             parentElement: _config.parentElement,
-            containerWidth: 800,
-            containerHeight: 500,
+            containerWidth: 1000,
+            containerHeight: 300,
             margin: { top: 15, right: 10, bottom: 70, left: 60 },
             tooltipPadding: 15,
         }
@@ -33,7 +33,7 @@ class Line {
 
         vis.colorScale = d3.scaleOrdinal()
             .domain(vis.keys)
-            .range(['#e41a1c','#377eb8'])
+            .range(d3.schemeTableau10)
 
         vis.xScale = d3.scaleTime()
             .range([0, vis.width]);
@@ -162,7 +162,7 @@ class Line {
         })
 
 
-        vis.xScale.domain([new Date('2012-12-01'), new Date('2018-10-01')]);
+        vis.xScale.domain([new Date('2013-06-01'), new Date('2018-10-01')]);
         vis.yScale.domain([0, 4800]);
 
         vis.renderVis();

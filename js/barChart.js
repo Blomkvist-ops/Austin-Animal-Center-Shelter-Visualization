@@ -7,9 +7,9 @@ class BarChart {
   constructor(_config, _data) {
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: _config.containerWidth || 500,
-      containerHeight: _config.containerHeight || 300,
-      margin: _config.margin || { top: 20, right: 20, bottom: 20, left: 40 },
+      containerWidth: 300,
+      containerHeight: 300,
+      margin: _config.margin || { top: 20, right: 30, bottom: 20, left: 50 },
     };
     this.data = _data;
     this.selectedCategories = [];

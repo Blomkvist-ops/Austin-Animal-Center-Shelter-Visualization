@@ -53,7 +53,7 @@ class BubbleChart {
       .append("text")
       .attr("class", ".title")
       .attr("x", 0)
-      .attr("y", 100)
+      .attr("y", 50)
       .attr("dy", ".71em")
       .text("Breed Distribution");
 
@@ -64,7 +64,7 @@ class BubbleChart {
       .range(d3.schemeTableau10);
 
     // Size scale for countries
-    vis.size = d3.scaleLinear().range([15, 80]); // circle will be between 7 and 55 px wide
+    vis.size = d3.scaleLinear().range([15, 90]); // circle will be between 7 and 55 px wide
 
     // Features of the forces applied to the nodes:
     vis.simulation = d3
