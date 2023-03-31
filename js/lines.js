@@ -176,7 +176,6 @@ class Line {
         vis.stackedData = d3.stack()
             .keys(vis.mygroup)
             .value(function(d, key){
-                // console.log(d.values[key].val)
                 return d.values[key].val
             })(groupData)
 
@@ -202,7 +201,6 @@ class Line {
 
         vis.stakcedline = vis.svg
             .selectAll(".lines")
-            // .append("g")
             .data(vis.stackedData)
             .enter()
             .append("path")
