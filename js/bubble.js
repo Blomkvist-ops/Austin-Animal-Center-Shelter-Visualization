@@ -11,7 +11,7 @@ class BubbleChart {
       containerHeight: 600,
       margin: { top: 15, right: 10, bottom: 10, left: 0 },
       tooltipPadding: 15,
-      colors: ["#F9F3B9", "#E5CD6C", "#AE6427", "#8C6239", "#2F1313"],
+      colors: ["#d92929", "#f0d773", "#ba7f4e", "#8C6239", "#6e4141"],
     };
     this.data = _data;
     this.selectedCategories = [];
@@ -64,7 +64,7 @@ class BubbleChart {
       .domain(["Dog", "Cat", "Bird", "Other"])
       .range([
         vis.config.colors[2],
-        vis.config.colors[3],
+        vis.config.colors[4],
         vis.config.colors[0],
         vis.config.colors[1],
       ]);

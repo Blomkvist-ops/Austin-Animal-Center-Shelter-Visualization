@@ -5,9 +5,9 @@ class BarChart {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 400,
-      containerHeight: 300,
-      margin: _config.margin || { top: 20, right: 150, bottom: 20, left: 50 },
-      colors: ["#F9F3B9", "#E5CD6C", "#AE6427", "#8C6239", "#2F1313"],
+      containerHeight: 500,
+      margin: _config.margin || { top: 20, right: 30, bottom: 100, left: 50 },
+      colors: ["#8C6239", "#AE6427", "#E5CD6C", "#F9F3B9"],
     };
     this.data = _data;
     this.selectedCategories = [];
@@ -50,7 +50,8 @@ class BarChart {
     vis.yScaleR = d3.scaleLinear().range([vis.height, 0]);
     vis.xScale = d3.scaleBand().range([0, vis.width]).padding(0.1);
 
-    // Initialize axes
+    vis.colorScale = d3.scaleOrdinal(vis.config.colors.reverse()).domain(["Baby", "Young", "Mature", "Elder"]);
+
     vis.xAxis = d3
       .axisBottom(vis.xScale)
       .ticks(["Baby", "Young", "Mature", "Elder"]);
@@ -146,7 +147,7 @@ class BarChart {
     // Bind data to visual elements, update axes
     let vis = this;
 
-    const colorScale = d3.scaleOrdinal(vis.config.colors.slice(0, 4).reverse());
+    
 
     vis.chart
       .selectAll(".bar")
@@ -157,7 +158,7 @@ class BarChart {
       .attr("y", (d) => vis.yScale(vis.yValue(d)))
       .attr("width", vis.xScale.bandwidth())
       .attr("height", (d) => vis.height - vis.yScale(vis.yValue(d)))
-      .attr("fill", (d) => colorScale(vis.yValue(d)))
+      .attr("fill", (d) => vis.colorScale(vis.xValue(d)))
       .on("mouseover", (event, d) => {
         d3.select(event.currentTarget).classed("bar-hover", true);
         d3.select("#tooltip")
