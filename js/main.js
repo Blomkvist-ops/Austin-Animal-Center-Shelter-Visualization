@@ -34,4 +34,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
 
   let barChart = new BarChart({ parentElement: "#bar-chart" }, data);
   barChart.updateVis();
+
+  let heatMap = new HeatMap({ parentElement: "#heat-map" }, data);
+  heatMap.updateVis();
 });
