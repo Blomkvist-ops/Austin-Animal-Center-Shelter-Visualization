@@ -112,7 +112,12 @@ line {
 }
 
 .point {
-  opacity: 0.7;
-  fill: #676477;
+  opacity: 0.5;
+  fill: #F9F3B9;
   cursor: pointer;
+}
+
+.net-label {
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 20px;
 }
