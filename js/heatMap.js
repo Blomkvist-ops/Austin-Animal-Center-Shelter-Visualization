@@ -3,8 +3,8 @@ class HeatMap {
     // Initialize HeatMap object with the specified configuration and data
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: _config.containerWidth || 500,
-      containerHeight: _config.containerHeight || 450,
+      containerWidth: 600,
+      containerHeight: 600,
       margin: _config.margin || { top: 20, right: 100, bottom: 40, left: 50 },
     };
     this.data = _data;
@@ -39,7 +39,7 @@ class HeatMap {
 
     vis.xScale = d3.scaleBand().range([0, vis.width]).padding(0.05);
     vis.yScale = d3.scaleBand().range([0, vis.height]).padding(0.05);
-    vis.colorScale = d3.scaleQuantize().range(d3.schemeGreens[5]);
+    vis.colorScale = d3.scaleQuantize().range(d3.schemeOranges[5]);
 
     vis.xAxis = d3.axisBottom(vis.xScale);
     vis.yAxis = d3.axisLeft(vis.yScale);
@@ -139,7 +139,7 @@ class HeatMap {
         d3
           .range(colorGroupCount)
           .flatMap((i) =>
-            d3.range(groupSize).map(() => d3.schemeGreens[colorGroupCount][i])
+            d3.range(groupSize).map(() => d3.schemeOranges[colorGroupCount][i])
           )
       );
 
@@ -186,7 +186,7 @@ class HeatMap {
       .range(colorGroupCount)
       .reverse()
       .map((i) => ({
-        color: d3.schemeGreens[colorGroupCount][i],
+        color: d3.schemeOranges[colorGroupCount][i],
         range: [
           orderedData.find((obj) => obj.order === i * groupSize).count,
           orderedData.find((obj) => obj.order === (i + 1) * groupSize - 1)
