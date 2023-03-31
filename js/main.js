@@ -24,8 +24,10 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
 
   let bubble = new BubbleChart({ parentElement: "#bubble-chart" }, data);
   let barChart = new BarChart({ parentElement: "#bar-chart" }, data);
+  let heatMap = new HeatMap({ parentElement: "#heat-map" }, data);
   bubble.updateVis();
   barChart.updateVis();
+  heatMap.updateVis();
 
   d3.selectAll('.legend-btn').on('click', function (event) {
 
@@ -55,10 +57,5 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
 
     bubble.updateVis();
     barChart.updateVis();
-
   });
-
-
 });
-
-

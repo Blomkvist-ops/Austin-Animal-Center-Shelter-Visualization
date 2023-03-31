@@ -1,8 +1,40 @@
 body {
+  font-family: "Noto Sans JP", sans-serif;
   font-family: 'Noto Sans JP', sans-serif;
   font-size: 13px;
   padding: 30px;
   background: #f7f7f7;
+}
+
+#tooltip {
+  position: absolute;
+  display: none;
+  background: #fff;
+  box-shadow: 3px 3px 3px 0px rgb(92 92 92 / 0.5);
+  border: 1px solid #ddd;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px;
+  min-width: 100px;
+  color: #333;
+}
+.tooltip-title {
+  color: #000;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.bar-hover {
+  stroke: #000;
+}
+
+.rect-hover {
+  stroke: #000;
+}
+
+line {
+  color: #a4a5c3;
+  opacity: 0.5;
 }
 
 .legend {
@@ -61,24 +93,4 @@ body {
 .bubble:hover {
   stroke: #000;
   stroke-width: 5px;
-}
-
-
-#tooltip {
-  position: absolute;
-  display: none;
-  background: #fff;
-  box-shadow: 3px 3px 3px 0px rgb(92 92 92 / 0.5);
-  border: 1px solid #ddd;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 8px;
-  min-width: 100px;
-  color: #333;
-}
-
-.tooltip-title {
-  color: #000;
-  font-size: 12px;
-  font-weight: 500;
 }

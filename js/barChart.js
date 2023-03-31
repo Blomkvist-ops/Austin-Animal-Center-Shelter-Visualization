@@ -4,7 +4,7 @@ class BarChart {
    * @param {Object}
    * @param {Array}
    */
-  constructor(_config, _data, _dispatch) {
+  constructor(_config, _data) {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: _config.containerWidth || 500,
@@ -159,6 +159,7 @@ class BarChart {
       .attr("height", (d) => vis.height - vis.yScale(vis.yValue(d)))
       .attr("fill", (d) => colorScale(vis.yValue(d)))
       .on("mouseover", (event, d) => {
+        d3.select(event.currentTarget).classed("bar-hover", true);
         d3.select("#tooltip")
           .style("display", "block")
           .style("left", event.pageX + 20 + "px")
@@ -168,6 +169,7 @@ class BarChart {
           );
       })
       .on("mouseleave", () => {
+        d3.select(event.currentTarget).classed("bar-hover", false);
         d3.select("#tooltip").style("display", "none");
       });
 
