@@ -8,8 +8,8 @@ class BubbleChart {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 600,
-      containerHeight: 800,
-      margin: { top: 15, right: 10, bottom: 70, left: 60 },
+      containerHeight: 600,
+      margin: { top: 15, right: 10, bottom: 10, left: 0 },
       tooltipPadding: 15,
     };
     this.data = _data;
