@@ -1,6 +1,6 @@
 body {
   font-family: "Noto Sans JP", sans-serif;
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: "Noto Sans JP", sans-serif;
   font-size: 13px;
   padding: 30px;
   background: #f7f7f7;
@@ -93,4 +93,8 @@ line {
 .bubble:hover {
   stroke: #000;
   stroke-width: 5px;
+}
+
+.axis path {
+  display: none;
 }
