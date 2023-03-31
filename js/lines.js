@@ -7,11 +7,11 @@ class Line {
     constructor(_config, _data, _data2) {
         this.config = {
             parentElement: _config.parentElement,
-            containerWidth: 1100,
-            containerHeight: 500,
-            margin: { top: 15, right: 60, bottom: 70, left: 60 },
+            containerWidth: 1300,
+            containerHeight: 300,
+            margin: { top: 15, right: 60, bottom: 30, left: 100 },
             tooltipPadding: 15,
-            colors: ["#F9F3B9", "#E5CD6C", "#AE6427", "#8C6239", "#2F1313"],
+            colors: ["#F9F3B9", "#E5CD6C", "#ba7f4e", "#8C6239", "#2F1313"],
         }
         this.data = _data;
         this.data2 = _data2;
@@ -84,7 +84,7 @@ class Line {
         // Append both axis titles
         vis.chart.append('text')
             .attr('class', 'axis-title')
-            .attr('y', 0)
+            .attr('y', -10)
             .attr('x', vis.width + 60)
             .attr('dy', '.71em')
             .style('text-anchor', 'end')
@@ -92,8 +92,8 @@ class Line {
 
         vis.svg.append('text')
             .attr('class', 'axis-title')
-            .attr('x', 0)
-            .attr('y', 15)
+            .attr('x', 10)
+            .attr('y', 5)
             .attr('dy', '.71em')
             .text('Number of Intake/outcome');
 

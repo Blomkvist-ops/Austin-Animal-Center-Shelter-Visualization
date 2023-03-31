@@ -78,19 +78,19 @@ line {
 }
 
 .legend-btn[data-category="Cat"] .legend-symbol {
-  background: #8c6239;
+  background: #592c2c;
 }
 
 .legend-btn[data-category="Dog"] .legend-symbol {
-  background: #ae6427;
+  background: #ba7f4e;
 }
 
 .legend-btn[data-category="Bird"] .legend-symbol {
-  background: #f9f3b9;
+  background: #d92929;
 }
 
 .legend-btn[data-category="Other"] .legend-symbol {
-  background: #e5cd6c;
+  background: #f0d773;
 }
 
 .bubble:hover {
