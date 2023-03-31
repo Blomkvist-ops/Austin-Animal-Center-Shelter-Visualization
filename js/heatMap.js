@@ -50,6 +50,14 @@ class HeatMap {
       .attr("transform", `translate(0,${vis.height})`);
 
     vis.yAxisG = vis.chart.append("g").attr("class", "axis y-axis");
+
+    vis.svg
+      .append("text")
+      .attr("class", "axis-title left")
+      .attr("x", 0)
+      .attr("y", 0)
+      .attr("dy", "12")
+      .text("Intake Condition / Intake Type / Count");
   }
 
   updateVis() {
