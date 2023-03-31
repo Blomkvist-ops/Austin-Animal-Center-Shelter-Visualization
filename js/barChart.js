@@ -4,9 +4,9 @@ class BarChart {
   constructor(_config, _data) {
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: 400,
+      containerWidth: 450,
       containerHeight: 500,
-      margin: _config.margin || { top: 20, right: 30, bottom: 100, left: 50 },
+      margin: _config.margin || { top: 20, right: 125, bottom: 100, left: 50 },
       colors: ["#8C6239", "#AE6427", "#E5CD6C", "#F9F3B9"],
     };
     this.data = _data;
@@ -50,7 +50,9 @@ class BarChart {
     vis.yScaleR = d3.scaleLinear().range([vis.height, 0]);
     vis.xScale = d3.scaleBand().range([0, vis.width]).padding(0.1);
 
-    vis.colorScale = d3.scaleOrdinal(vis.config.colors.reverse()).domain(["Baby", "Young", "Mature", "Elder"]);
+    vis.colorScale = d3
+      .scaleOrdinal(vis.config.colors.reverse())
+      .domain(["Baby", "Young", "Mature", "Elder"]);
 
     vis.xAxis = d3
       .axisBottom(vis.xScale)
@@ -146,8 +148,6 @@ class BarChart {
   renderVis(ageCounts) {
     // Bind data to visual elements, update axes
     let vis = this;
-
-    
 
     vis.chart
       .selectAll(".bar")
