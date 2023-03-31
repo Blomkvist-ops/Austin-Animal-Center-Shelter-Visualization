@@ -8,7 +8,7 @@ class Line {
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: 1300,
-            containerHeight: 300,
+            containerHeight: 400,
             margin: { top: 15, right: 60, bottom: 30, left: 100 },
             tooltipPadding: 15,
             colors: ["#F9F3B9", "#E5CD6C", "#ba7f4e", "#8C6239", "#2F1313"],
@@ -82,10 +82,10 @@ class Line {
             .attr("transform", "translate(" + vis.width + " ,+15)");
 
         // Append both axis titles
-        vis.chart.append('text')
+        vis.svg.append('text')
             .attr('class', 'axis-title')
-            .attr('y', -10)
-            .attr('x', vis.width + 60)
+            .attr('y', 5)
+            .attr('x', vis.width + 150)
             .attr('dy', '.71em')
             .style('text-anchor', 'end')
             .text('Net Number');
@@ -172,9 +172,9 @@ class Line {
             return parseTime(a[0]) - parseTime(b[0])}
         )
 
-        let mygroup = [0,1]
+        vis.mygroup = [0,1]
         vis.stackedData = d3.stack()
-            .keys(mygroup)
+            .keys(vis.mygroup)
             .value(function(d, key){
                 // console.log(d.values[key].val)
                 return d.values[key].val
@@ -200,22 +200,11 @@ class Line {
         const parseTime = d3.timeParse("%Y-%m")
 
 
-        //
-        // const circles = vis.svg.selectAll('.point')
-        //     .data(vis.testArr)
-        //     .join('circle')
-        //     .attr('class', 'point')
-        //     .attr('r', 4)
-        //     .attr('cy', d => vis.yScale(d.value))
-        //     .attr('cx', d => vis.xScale(d.year))
-        //     .attr('fill', "black")
-
         vis.stakcedline = vis.svg
             .selectAll(".lines")
             // .append("g")
             .data(vis.stackedData)
             .enter()
-            // .attr('class', d => 'data-path type-' + d.key)
             .append("path")
             .style("fill", function(d) { name = vis.keys[d.key] ;  return vis.colorScale(name); })
             .attr("d", d3.area()
@@ -228,17 +217,64 @@ class Line {
                 .y1(function(d) { return vis.yScale(d[1]); })
             )
 
-        //Add the line
+        //Add net line
         const lines = vis.svg.append("path")
             .datum(vis.sortedNet)
             .attr("fill", "none")
             .attr("stroke", "black")
-            .attr("stroke-width", 5)
+            .attr("stroke-width", 3)
             .attr("d", d3.line()
                 .x(function(d) {
                     return vis.xScale(d.year) })
                 .y(function(d) { return vis.yScaleR(d.value) })
             )
+
+
+        const circles = vis.svg.selectAll('.point')
+            .data(vis.sortedNet)
+            .join('circle')
+            .attr('class', 'point')
+            .attr('r', 4)
+            .attr('cy', d => vis.yScaleR(d.value))
+            .attr('cx', d => vis.xScale(d.year))
+
+        // add legend
+        let size = 20
+        vis.svg.selectAll("myarea")
+            .data(vis.mygroup)
+            .enter()
+            .append("rect")
+            .attr("x", vis.width - 50)
+            .attr("y", function(d,i){ return 10 + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
+            .attr("width", size)
+            .attr("height", size)
+            .style("fill", function(d){
+                name = vis.keys[d] ;  return vis.colorScale(name);})
+
+        // Add name for each legend
+        vis.svg.selectAll("mylabels")
+            .data(vis.mygroup)
+            .enter()
+            .append("text")
+            .attr("x", vis.width - size * 1.2)
+            .attr("y", function(d,i){ return 10 + i*(size+5) + (size / 2) + 5})
+            .text(function(d){
+                if (d == 0) {
+                    return "Intake"
+                } else {
+                    return "Outcome"
+                }})
+
+        // Add label for net line
+        vis.svg.append("text")
+            .attr("transform", "translate(" + (vis.width + 50) + "," +
+                (vis.yScaleR(vis.sortedNet[vis.sortedNet.length - 1].value) + 15) + ")")
+            .attr("class", "net-label")
+            .attr("dy", ".35em")
+            .attr("text-anchor", "start")
+            .style("fill", "black")
+            .text("Net");
+
 
         vis.xAxisG
             .call(vis.xAxis)
