@@ -82,6 +82,7 @@ class BarChart {
       .attr("dy", "12")
       .text("Count / Age (Years)");
 
+
     // Append right y axis title
     vis.svg.append('text')
       .attr('class', 'axis-title')
