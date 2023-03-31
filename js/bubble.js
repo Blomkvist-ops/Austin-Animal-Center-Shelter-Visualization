@@ -14,6 +14,7 @@ class BubbleChart {
             tooltipPadding: 15,
         }
         this.data = _data;
+        this.selectedCategories = [];
         this.initVis();
     }
 
@@ -38,6 +39,13 @@ class BubbleChart {
 
         vis.chart = vis.chartArea.append('g');
 
+        vis.svg.append('text')
+            .attr('class', '.title')
+            .attr('x', 0)
+            .attr('y', 100)
+            .attr('dy', '.71em')
+            .text('Breed Distribution');
+
         // Color palette for animal types
         vis.color = d3.scaleOrdinal()
             .domain(["Dog", "Cat", "Bird", "Other"])
@@ -50,9 +58,12 @@ class BubbleChart {
 
         // Features of the forces applied to the nodes:
         vis.simulation = d3.forceSimulation()
-            .force("center", d3.forceCenter().x(200).y(400)) // Attraction to the center of the svg area
-            .force("charge", d3.forceManyBody().strength(.1)) // Nodes are attracted one each other of value is > 0
-            .force("collide", d3.forceCollide().strength(.2).radius(function (d) { return (vis.size(d.value) + 3) }).iterations(1)) // Force that avoids circle overlapping
+            .force('charge', d3.forceManyBody().strength(function (d) {
+                return Math.pow(d.radius, 2.0) * 0.03
+            }))
+            .force('x', d3.forceX().strength(0.03).x(vis.width / 2))
+            .force('y', d3.forceY().strength(0.03).y(vis.height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 2));
 
     }
 
@@ -67,6 +78,13 @@ class BubbleChart {
 
         vis.size.domain(d3.extent(vis.group, d => d.value));
 
+        vis.nodes = vis.group.map(d => ({
+            ...d,
+            radius: vis.size(d.value),
+            x: Math.random() * 900,
+            y: Math.random() * 800
+        }))
+
         vis.renderVis();
     }
 
@@ -74,46 +92,33 @@ class BubbleChart {
     renderVis() {
         let vis = this;
 
-        var node = vis.chart.selectAll('.circle')
-            .data(vis.group)
-            .join("circle")
-            .attr("class", "node")
-            .attr("r", d => vis.size(d.value))
-            .attr("cx", 200)
-            .attr("cy", 400)
-            .style("fill", d => vis.color(d.type))
-            .style("fill-opacity", 0.8)
-            .attr("stroke", "black")
-            .style("stroke-width", 1)
+        const bubbles = vis.chart.selectAll(".bubble")
+            .data(vis.nodes)
+            .join(
+                enter => enter.append("circle").attr("class", "bubble"),
+                update => update,
+                exit => exit.remove()
+            )
+            .attr('r', d => d.radius)
+            .attr('fill', d => vis.color(d.type))
+            .on("mouseover", (event, d) => {
+                d3.select('#tooltip')
+                    .style('display', 'block')
+                    .style("left", (event.pageX + 20) + "px")
+                    .style("top", (event.pageY) + "px")
+                    .html(`
+            <div class='tooltip-title'>${d.type}: ${d.breed}</div>
+              <div> ${d.value} </div>
+          `);
+            })
+            .on("mouseleave", () => {
+                d3.select('#tooltip').style('display', 'none');
+            })
             .call(d3.drag() // call specific function when circle is dragged
                 .on("start", dragstarted)
                 .on("drag", dragged)
                 .on("end", dragended));
 
-        vis.simulation
-            .nodes(vis.group)
-            .on("tick", function (d) {
-                node
-                    .attr("cx", d => d.x)
-                    .attr("cy", d => d.y)
-            });
-        
-        node.on("mouseover", (event, d) => {
-            d3.select('#tooltip')
-              .style('display', 'block')
-              .style("left", (event.pageX +20) + "px")
-              .style("top", (event.pageY) + "px")
-              .html(`
-              <div class='tooltip-title'>${d.type}: ${d.breed}</div>
-                <div> ${d.value} </div>
-            `);
-          }) 
-        .on("mouseleave", () => {
-            d3.select('#tooltip').style('display', 'none');
-          });
-        
-
-        // What happens when a circle is dragged?
         function dragstarted(event, d) {
             if (!event.active) vis.simulation.alphaTarget(.03).restart();
             d.fx = d.x;
@@ -129,23 +134,50 @@ class BubbleChart {
             d.fy = null;
         }
 
+        const label = vis.chart.selectAll(".label")
+            .data(vis.nodes)
+            .join(
+                enter => enter.append("text").attr("class", "label")
+                    .attr('dy', '.3em')
+                    .style('text-anchor', 'middle')
+                    .style('font-size', 12),
+                update => update,
+                exit => exit.remove()
+            )
+            .text(function (d) {
+                return ((d.value / vis.data.length) * 100 > 1) ? ((d.value / vis.data.length) * 100).toFixed(2) + "%" : '';
+            })
 
-        // Apply these forces to the nodes and update their positions.
-        // Once the force algorithm is happy with positions ('alpha' value is low enough), simulations will stop.
+        const label1 = vis.chart.selectAll(".label1")
+            .data(vis.nodes)
+            .join(
+                enter => enter.append("text").attr("class", "label1")
+                    .attr('dy', '2em')
+                    .style('text-anchor', 'middle')
+                    .style('font-size', 7),
+                update => update,
+                exit => exit.remove()
+            )
+            .text(function (d) {
+                return ((d.value / vis.data.length) * 100 > 1) ? d.breed : '';
+            })
 
+        vis.simulation
+            .nodes(vis.nodes)
+            .on("tick", function (d) {
+                bubbles
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y)
+                label
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y)
+                label1
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y)
+            })
+            .restart();
 
-        // Add textLabel
-        // vis.chart.selectAll('.text')
-        //     .data(vis.filteredData, d => d.id)
-        //     .join('text')
-        //     .attr('class', 'text')
-        //     .text(d => {
-        //         if (d.label == 1 || vis.selectLeader.includes(d.id)) {
-        //             return d.leader
-        //         }
-        //     })
-        //     .attr('transform',
-        //         d => `translate(${vis.xScale(d.start_year)}, ${vis.yScale(d.start_age)}) rotate(-20)`);
 
     }
 }
+
