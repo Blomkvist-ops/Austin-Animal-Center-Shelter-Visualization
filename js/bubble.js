@@ -4,7 +4,7 @@ class BubbleChart {
    * @param {Object}
    * @param {Array}
    */
-  constructor(_config, _data) {
+  constructor(_config, _data, _selectAge, _dispatcher) {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 500,
@@ -14,6 +14,8 @@ class BubbleChart {
       colors: ["#d92929", "#f0d773", "#ba7f4e", "#8C6239", "#6e4141"],
     };
     this.data = _data;
+    this.dispatcher = _dispatcher;
+    this.selectAge = _selectAge;
     this.selectedCategories = [];
     this.initVis();
   }
@@ -104,10 +106,16 @@ class BubbleChart {
   updateVis() {
     let vis = this;
 
+    vis.filtereddata = vis.data;
+
+    if (vis.selectAge != null) {
+      vis.filtereddata = vis.data.filter(d => d.age_group == vis.selectAge.age); 
+    }
+
     // create group of data needed for bubble chart
     vis.group = Array.from(
       d3.rollup(
-        vis.data,
+        vis.filtereddata,
         (v) => v.length,
         (d) => d.breed,
         (d) => d.animal_type
@@ -161,6 +169,21 @@ class BubbleChart {
       .on("mouseleave", () => {
         d3.select("#tooltip").style("display", "none");
       })
+      .on('click', function (v, d) {
+        const isActive = d3.select(this).classed("active");
+        // limit 1 selection
+        d3.selectAll(".bubble.active").classed("active", false);
+        // toggle the selection
+        d3.select(this).classed("active", !isActive);
+  
+        const selectedGender = vis.chart.selectAll(".bubble.active").data();
+        
+        if (selectedGender[0] != null) {
+          vis.dispatcher.call("filterBreed", v, selectedGender[0]);
+        } else {
+          vis.dispatcher.call("filterBreed", v, null);
+        }
+      })
       .call(
         d3
           .drag() // call specific function when circle is dragged
@@ -201,8 +224,8 @@ class BubbleChart {
         (exit) => exit.remove()
       )
       .text(function (d) {
-        return (d.value / vis.data.length) * 100 > 1
-          ? ((d.value / vis.data.length) * 100).toFixed(2) + "%"
+        return (d.value / vis.filtereddata.length) * 100 > 1
+          ? ((d.value / vis.filtereddata.length) * 100).toFixed(2) + "%"
           : "";
       });
 
@@ -222,7 +245,7 @@ class BubbleChart {
         (exit) => exit.remove()
       )
       .text(function (d) {
-        return (d.value / vis.data.length) * 100 > 1 ? d.breed : "";
+        return (d.value / vis.filtereddata.length) * 100 > 1 ? d.breed : "";
       });
 
     // simulation function for nodes moving

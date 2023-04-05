@@ -23,8 +23,14 @@ body {
   font-weight: 500;
 }
 
+.bar.active {
+  stroke: #000;
+  stroke-width: 3px;
+}
+
 .bar-hover {
   stroke: #000;
+  stroke-width: 3px;
 }
 
 .rect-hover {
@@ -95,6 +101,12 @@ line {
 
 .legend-btn[data-category="Other"] .legend-symbol {
   background: #f0d773;
+}
+
+.bubble.active {
+  opacity: 1;
+  stroke: #000;
+  stroke-width: 5px;
 }
 
 .bubble:hover {

@@ -1,7 +1,7 @@
 // BarChart class definition
 class BarChart {
   // Class constructor with initial configuration
-  constructor(_config, _data) {
+  constructor(_config, _data, _selectBreed, _dispatcher) {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 600,
@@ -10,6 +10,8 @@ class BarChart {
       colors: ["#8C6239", "#AE6427", "#E5CD6C", "#F9F3B9"],
     };
     this.data = _data;
+    this.selectBreed = _selectBreed;
+    this.dispatcher = _dispatcher;
     this.selectedCategories = [];
     this.initVis();
   }
@@ -109,7 +111,7 @@ class BarChart {
 
     let ageCounts = {};
 
-    vis.data.forEach((d) => {
+    vis.filtereddata.forEach((d) => {
       const age = vis.getAgeGroup(d.age_upon_outcome); // Use helper function to determine age group
       const timeInShelter = d.time_in_shelter;
 
@@ -132,6 +134,12 @@ class BarChart {
     vis.xValue = (d) => d.age;
     vis.yValue = (d) => d.count;
     vis.yValueR = (d) => d.average;
+
+    vis.filtereddata = vis.data;
+
+    if (vis.selectBreed != null) {
+      vis.filtereddata = vis.data.filter(d => d.breed == vis.selectBreed.breed);
+    }
 
     const ageCounts = vis.calculateAgeCounts();
 
@@ -180,6 +188,21 @@ class BarChart {
         d3.select("#tooltip").style("display", "none");
         d3.selectAll(".y-axis.left .tick text").style("font-weight", "normal");
         d3.select(".axis-title.left").style("font-weight", "normal");
+      })
+      .on('click', function (v, d) {
+        const isActive = d3.select(this).classed("active");
+        // limit 1 selection
+        d3.selectAll(".bar.active").classed("active", false);
+        // toggle the selection
+        d3.select(this).classed("active", !isActive);
+  
+        const selectedGender = vis.chart.selectAll(".bar.active").data();
+        
+        if (selectedGender[0] != null) {
+          vis.dispatcher.call("filterAge", v, selectedGender[0]);
+        } else {
+          vis.dispatcher.call("filterBreed", v, null);
+        }
       });
 
 
