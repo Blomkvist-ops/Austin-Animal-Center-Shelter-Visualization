@@ -39,18 +39,26 @@ class Line {
         vis.xScale = d3.scaleTime()
             .range([0, vis.width]);
 
+        vis.xScaleFocus = d3.scaleTime()
+            .range([0, vis.config.width]);
+
         vis.yScale = d3.scaleLinear()
             .range([vis.height, 0]);
 
         vis.yScaleR = d3.scaleLinear()
             .range([vis.height, 0]);
 
+        vis.yScaleFocus = d3.scaleLinear()
+            .range([vis.config.height, 0])
+            .nice();
+
         // Initialize axes
         vis.xAxis = d3.axisBottom(vis.xScale)
-            .ticks(10)
+            .ticks(12)
             .tickFormat(d => {
                 return formatDate(new Date(d))
             });
+
 
         vis.yAxis = d3.axisLeft(vis.yScale)
             .tickPadding(10);
@@ -58,6 +66,7 @@ class Line {
         vis.yAxisR = d3.axisRight(vis.yScaleR)
             .tickPadding(10)
             .tickFormat(d3.format("d"));
+
 
         // Define size of SVG drawing area
         vis.svg = d3.select(vis.config.parentElement)
@@ -81,8 +90,23 @@ class Line {
             .attr('class', 'axis y-axis')
             .attr("transform", "translate(" + vis.width + " ,+15)");
 
+        vis.brushG = vis.chart.append('g')
+            .attr('class', 'brush x-brush');
+
+
+        // Initialize brush component
+        vis.brush = d3.brushX()
+            .extent([[0, 0], [vis.config.width, vis.config.contextHeight]])
+            .on('brush', function({selection}) {
+                if (selection) vis.brushed(selection);
+            })
+            .on('end', function({selection}) {
+                if (!selection) vis.brushed(null);
+            });
+
+
         // Append both axis titles
-        vis.svg.append('text')
+        vis.chart.append('text')
             .attr('class', 'axis-title')
             .attr('y', 5)
             .attr('x', vis.width + 150)
@@ -90,9 +114,9 @@ class Line {
             .style('text-anchor', 'end')
             .text('Net Number');
 
-        vis.svg.append('text')
+        vis.chart.append('text')
             .attr('class', 'axis-title')
-            .attr('x', 10)
+            .attr('x', 0)
             .attr('y', 5)
             .attr('dy', '.71em')
             .text('Number of Intake/outcome');
@@ -131,15 +155,15 @@ class Line {
                     cnt++;
                 }
                 let num = e[1] - cnt;
-                groupByDate3.set(e[0], num)
+                groupByDate3.set(e[0], [num, e[1], cnt])
             } else {
-                groupByDate3.set(e[0], e[1])
+                groupByDate3.set(e[0], [e[1], e[1], 0])
             }
         })
 
         vis.outcomeArr.forEach(e => {
             if (groupByDate3.get(e[0]) == null) {
-                groupByDate3.set(e[0], -e[1])
+                groupByDate3.set(e[0], [-e[1], 0 , e[1]])
             }
         })
 
@@ -149,8 +173,8 @@ class Line {
         vis.netArr = Array.from(groupByDate3.entries());
         let groupData = [];
         vis.netArr.forEach(e => {
-            let intakeNum = groupByDate.get(e[0]) != null ? groupByDate.get(e[0]).length : 0
-            let outcomeNum = groupByDate2.get(e[0]) != null ? groupByDate2.get(e[0]).length : 0
+            let intakeNum = e[1][1]
+            let outcomeNum = e[1][2]
             groupData.push({
                 "key": e[0],
                 "values":[{"year": e[0], "name": "outcome", "val": outcomeNum},
@@ -186,7 +210,7 @@ class Line {
         })
 
 
-        vis.xScale.domain([new Date('2013-05-01'), new Date('2017-12-01')]);
+        vis.xScale.domain([new Date('2013-10-01'), new Date('2018-05-01')]);
         vis.yScale.domain([0, 4800]);
         vis.yScaleR.domain([-1500, 1500]);
 
@@ -199,7 +223,7 @@ class Line {
         const parseTime = d3.timeParse("%Y-%m")
 
 
-        vis.stakcedline = vis.svg
+        vis.stakcedline = vis.chart
             .selectAll(".lines")
             .data(vis.stackedData)
             .enter()
@@ -216,7 +240,7 @@ class Line {
             )
 
         //Add net line
-        const lines = vis.svg.append("path")
+        const line = vis.chart.append("path")
             .datum(vis.sortedNet)
             .attr("fill", "none")
             .attr("stroke", "black")
@@ -224,25 +248,47 @@ class Line {
             .attr("d", d3.line()
                 .x(function(d) {
                     return vis.xScale(d.year) })
-                .y(function(d) { return vis.yScaleR(d.value) })
+                .y(function(d) { return vis.yScaleR(d.value[0]) })
             )
 
 
-        const circles = vis.svg.selectAll('.point')
+        const circles = vis.chart.selectAll('.point')
             .data(vis.sortedNet)
             .join('circle')
             .attr('class', 'point')
             .attr('r', 4)
-            .attr('cy', d => vis.yScaleR(d.value))
+            .attr('cy', d => vis.yScaleR(d.value[0]))
             .attr('cx', d => vis.xScale(d.year))
+
+        // add tooltips
+        circles.on("mouseover", (event, d) => {
+            d3.select("#tooltip")
+                .style("display", "block")
+                .style("left", (event.pageX + vis.config.tooltipPadding) + "px")
+                .style("top", (event.pageY + vis.config.tooltipPadding) + "px")
+                .html(`
+					<div class="tooltip-title">Time: ${formatDate(d.year)}</div>
+					<div>
+						<i>Type: General</i>
+					</div>
+					<ul>
+						<li>Intake Num: ${d.value[1]}</li>
+						<li>Outcome Num: ${d.value[2]}</li>
+						<li>Net Num: ${d.value[0]}</li>
+					</ul>
+				`);
+        })
+            .on("mouseleave", () => {
+                d3.select("#tooltip").style("display", "none");
+            });
 
         // add legend
         let size = 20
-        vis.svg.selectAll("myarea")
+        vis.chart.selectAll("myarea")
             .data(vis.mygroup)
             .enter()
             .append("rect")
-            .attr("x", vis.width - 50)
+            .attr("x", vis.width - 150)
             .attr("y", function(d,i){ return 10 + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
             .attr("width", size)
             .attr("height", size)
@@ -250,11 +296,11 @@ class Line {
                 name = vis.keys[d] ;  return vis.colorScale(name);})
 
         // Add name for each legend
-        vis.svg.selectAll("mylabels")
+        vis.chart.selectAll("mylabels")
             .data(vis.mygroup)
             .enter()
             .append("text")
-            .attr("x", vis.width - size * 1.2)
+            .attr("x", vis.width - size * 1.2 - 100)
             .attr("y", function(d,i){ return 10 + i*(size+5) + (size / 2) + 5})
             .text(function(d){
                 if (d == 0) {
@@ -264,9 +310,9 @@ class Line {
                 }})
 
         // Add label for net line
-        vis.svg.append("text")
-            .attr("transform", "translate(" + (vis.width + 50) + "," +
-                (vis.yScaleR(vis.sortedNet[vis.sortedNet.length - 1].value) + 15) + ")")
+        vis.chart.append("text")
+            .attr("transform", "translate(" + (vis.width - 50) + "," +
+                (vis.yScaleR(vis.sortedNet[vis.sortedNet.length - 1].value[0]) + 15) + ")")
             .attr("class", "net-label")
             .attr("dy", ".35em")
             .attr("text-anchor", "start")
@@ -286,6 +332,12 @@ class Line {
             .call(vis.yAxisR)
             .call(g => g.select('.domain').remove())
 
+
+        // Update the brush and define a default position
+        const defaultBrushSelection = [vis.xScaleFocus(new Date('2019-01-01')), vis.xScaleContext.range()[1]];
+        vis.brushG
+            .call(vis.brush)
+            .call(vis.brush.move, defaultBrushSelection);
     }
 
 
@@ -302,3 +354,27 @@ function formatDate(date) {
 
   return [year, month].join("-");
 }
+
+/**
+ * React to brush events
+ */
+function brushed(selection) {
+    let vis = this;
+
+    // Check if the brush is still active or if it has been removed
+    if (selection) {
+        // Convert given pixel coordinates (range: [x0,x1]) into a time period (domain: [Date, Date])
+        const selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
+
+        // Update x-scale of the focus view accordingly
+        vis.xScaleFocus.domain(selectedDomain);
+    } else {
+        // Reset x-scale of the focus view (full time period)
+        vis.xScaleFocus.domain(vis.xScale.domain());
+    }
+
+    // Redraw line and update x-axis labels in focus view
+    // vis.focusLinePath.attr('d', vis.line);
+    vis.xAxisG.call(vis.xAxis);
+}
+
