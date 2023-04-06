@@ -96,6 +96,23 @@ class BarChart {
       .attr("y", 0)
       .attr("dy", "12")
       .text("Time in Shelter (Days)");
+
+    // Create the legend
+    vis.legend = vis.chart
+      .append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(${vis.width}, 0)`);
+
+    vis.legendItemHeight = 20;
+    vis.legendColorScale = d3.scaleOrdinal(vis.config.colors.slice(0, 4));
+
+    // Update the legendData array with age groups and their colors
+    vis.legendData = [
+      { age: "Baby", range: "0-2", color: vis.legendColorScale("Baby") },
+      { age: "Young", range: "2-5", color: vis.legendColorScale("Young") },
+      { age: "Mature", range: "5-10", color: vis.legendColorScale("Mature") },
+      { age: "Elder", range: "10+", color: vis.legendColorScale("Elder") },
+    ];
   }
 
   getAgeGroup(age) {
@@ -138,7 +155,9 @@ class BarChart {
     vis.filtereddata = vis.data;
 
     if (vis.selectBreed != null) {
-      vis.filtereddata = vis.data.filter(d => d.breed == vis.selectBreed.breed);
+      vis.filtereddata = vis.data.filter(
+        (d) => d.breed == vis.selectBreed.breed
+      );
     }
 
     const ageCounts = vis.calculateAgeCounts();
@@ -189,22 +208,21 @@ class BarChart {
         d3.selectAll(".y-axis.left .tick text").style("font-weight", "normal");
         d3.select(".axis-title.left").style("font-weight", "normal");
       })
-      .on('click', function (v, d) {
+      .on("click", function (v, d) {
         const isActive = d3.select(this).classed("active");
         // limit 1 selection
         d3.selectAll(".bar.active").classed("active", false);
         // toggle the selection
         d3.select(this).classed("active", !isActive);
-  
+
         const selectedGender = vis.chart.selectAll(".bar.active").data();
-        
+
         if (selectedGender[0] != null) {
           vis.dispatcher.call("filterAge", v, selectedGender[0]);
         } else {
           vis.dispatcher.call("filterBreed", v, null);
         }
       });
-
 
     // line view
     vis.chart
@@ -247,39 +265,34 @@ class BarChart {
     vis.yAxisG.call(vis.yAxis).call((g) => g.select(".domain").remove());
     vis.yAxisGR.call(vis.yAxisR).call((g) => g.select(".domain").remove());
 
-    // Create the legend
-    const legend = vis.chart
-      .append("g")
-      .attr("class", "legend")
-      .attr("transform", `translate(${vis.width}, 0)`);
-
-    const legendItemHeight = 20;
-    const legendColorScale = d3.scaleOrdinal(vis.config.colors.slice(0, 4));
-
-    // Update the legendData array with age groups and their colors
-    const legendData = [
-      { age: "Baby", range: "0-2", color: legendColorScale("Baby") },
-      { age: "Young", range: "2-5", color: legendColorScale("Young") },
-      { age: "Mature", range: "5-10", color: legendColorScale("Mature") },
-      { age: "Elder", range: "10+", color: legendColorScale("Elder") },
-    ];
-
-    const legendItems = legend
+    vis.legendItems = vis.legend
       .selectAll(".legend-item")
-      .data(legendData)
-      .enter()
-      .append("g")
-      .attr("class", "legend-item")
-      .attr("transform", (d, i) => `translate(30, ${i * legendItemHeight})`);
+      .data(vis.legendData)
+      .join(
+        (enter) =>
+          enter
+            .append("g")
+            .attr("class", "legend-item")
+            .attr(
+              "transform",
+              (d, i) => `translate(30, ${i * vis.legendItemHeight})`
+            ),
+        (update) => update,
+        (exit) => exit.remove()
+      );
 
-    legendItems
-      .append("rect")
+    vis.legendItems
+      .selectAll("rect")
+      .data((d) => [d])
+      .join("rect")
       .attr("width", 15)
       .attr("height", 15)
       .style("fill", (d) => d.color);
 
-    legendItems
-      .append("text")
+    vis.legendItems
+      .selectAll("text")
+      .data((d) => [d])
+      .join("text")
       .attr("x", 20)
       .attr("y", 12)
       .text((d) => `${d.age}: ${d.range}`)

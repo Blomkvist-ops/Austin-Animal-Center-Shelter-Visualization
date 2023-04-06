@@ -109,7 +109,9 @@ class BubbleChart {
     vis.filtereddata = vis.data;
 
     if (vis.selectAge != null) {
-      vis.filtereddata = vis.data.filter(d => d.age_group == vis.selectAge.age); 
+      vis.filtereddata = vis.data.filter(
+        (d) => d.age_group == vis.selectAge.age
+      );
     }
 
     // create group of data needed for bubble chart
@@ -169,17 +171,17 @@ class BubbleChart {
       .on("mouseleave", () => {
         d3.select("#tooltip").style("display", "none");
       })
-      .on('click', function (v, d) {
+      .on("click", function (v, d) {
         const isActive = d3.select(this).classed("active");
         // limit 1 selection
         d3.selectAll(".bubble.active").classed("active", false);
         // toggle the selection
         d3.select(this).classed("active", !isActive);
-  
-        const selectedGender = vis.chart.selectAll(".bubble.active").data();
-        
-        if (selectedGender[0] != null) {
-          vis.dispatcher.call("filterBreed", v, selectedGender[0]);
+
+        const selectedBreed = vis.chart.selectAll(".bubble.active").data();
+
+        if (selectedBreed[0] != null) {
+          vis.dispatcher.call("filterBreed", v, selectedBreed[0]);
         } else {
           vis.dispatcher.call("filterBreed", v, null);
         }
