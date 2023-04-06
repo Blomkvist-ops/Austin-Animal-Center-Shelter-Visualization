@@ -1,14 +1,17 @@
 class HeatMap {
-  constructor(_config, _data) {
+  constructor(_config, _data, _selectBreed, _selectAge, _dispatcher) {
     // Initialize HeatMap object with the specified configuration and data
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 1300,
-      containerHeight: 300,
+      containerHeight: 250,
       margin: _config.margin || { top: 20, right: 100, bottom: 40, left: 100 },
       colors: ["#F9F3B9", "#E5CD6C", "#AE6427", "#8C6239", "#2F1313"],
     };
     this.data = _data;
+    this.selectBreed = _selectBreed;
+    this.selectAge = _selectAge;
+    this.dispatcher = _dispatcher;
     this.initVis();
   }
 
@@ -53,7 +56,7 @@ class HeatMap {
 
     vis.svg
       .append("text")
-      .attr("class", "axis-title left")
+      .attr("class", "axis-title1 left")
       .attr("x", 0)
       .attr("y", 0)
       .attr("dy", "12")
@@ -64,16 +67,26 @@ class HeatMap {
     // Update visualization settings based on the data
     let vis = this;
 
+    vis.filtereddata = vis.data;
+
+    if (vis.selectBreed != null) {
+      vis.filtereddata = vis.data.filter(d => d.breed == vis.selectBreed.breed);
+    }
+
+    if (vis.selectAge != null) {
+      vis.filtereddata = vis.data.filter(d => d.age_group == vis.selectAge.age); 
+    }
+
     // Group data by intake type and intake condition
     const groupedData = d3.rollups(
-      vis.data,
+      vis.filtereddata,
       (v) => v.length,
       (d) => d.intake_type,
       (d) => d.intake_condition
     );
 
     // Calculate the counts for each intake type
-    const intakeTypeCounts = vis.data.reduce((acc, item) => {
+    const intakeTypeCounts = vis.filtereddata.reduce((acc, item) => {
       if (!acc[item.intake_type]) {
         acc[item.intake_type] = 0;
       }
@@ -83,11 +96,11 @@ class HeatMap {
 
     // Sort the intake types based on counts in descending order
     const xDomain = Array.from(
-      new Set(vis.data.map((d) => d.intake_type))
+      new Set(vis.filtereddata.map((d) => d.intake_type))
     ).sort((a, b) => intakeTypeCounts[b] - intakeTypeCounts[a]);
 
     // Calculate the counts for each intake condition
-    const intakeConditionCounts = vis.data.reduce((acc, item) => {
+    const intakeConditionCounts = vis.filtereddata.reduce((acc, item) => {
       if (!acc[item.intake_condition]) {
         acc[item.intake_condition] = 0;
       }
@@ -97,7 +110,7 @@ class HeatMap {
 
     // Sort the intake conditions based on counts in descending order
     const yDomain = Array.from(
-      new Set(vis.data.map((d) => d.intake_condition))
+      new Set(vis.filtereddata.map((d) => d.intake_condition))
     ).sort((a, b) => intakeConditionCounts[b] - intakeConditionCounts[a]);
 
     // Update scales and domains based on the sorted intake types and conditions

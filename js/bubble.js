@@ -4,16 +4,18 @@ class BubbleChart {
    * @param {Object}
    * @param {Array}
    */
-  constructor(_config, _data) {
+  constructor(_config, _data, _selectAge, _dispatcher) {
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: 600,
-      containerHeight: 600,
+      containerWidth: 500,
+      containerHeight: 500,
       margin: { top: 15, right: 10, bottom: 10, left: 0 },
       tooltipPadding: 15,
       colors: ["#d92929", "#f0d773", "#ba7f4e", "#8C6239", "#6e4141"],
     };
     this.data = _data;
+    this.dispatcher = _dispatcher;
+    this.selectAge = _selectAge;
     this.selectedCategories = [];
     this.initVis();
   }
@@ -39,8 +41,6 @@ class BubbleChart {
       vis.config.margin.top -
       vis.config.margin.bottom;
 
-    // Append group element that will contain our actual chart
-    // and position it according to the given margin config
     vis.chartArea = vis.svg
       .append("g")
       .attr(
@@ -106,9 +106,16 @@ class BubbleChart {
   updateVis() {
     let vis = this;
 
+    vis.filtereddata = vis.data;
+
+    if (vis.selectAge != null) {
+      vis.filtereddata = vis.data.filter(d => d.age_group == vis.selectAge.age); 
+    }
+
+    // create group of data needed for bubble chart
     vis.group = Array.from(
       d3.rollup(
-        vis.data,
+        vis.filtereddata,
         (v) => v.length,
         (d) => d.breed,
         (d) => d.animal_type
@@ -124,6 +131,7 @@ class BubbleChart {
 
     vis.size.domain(d3.extent(vis.group, (d) => d.value));
 
+    // create nodes needed with size data
     vis.nodes = vis.group.map((d) => ({
       ...d,
       radius: vis.size(d.value),
@@ -137,6 +145,7 @@ class BubbleChart {
   renderVis() {
     let vis = this;
 
+    // draw nodes
     const bubbles = vis.chart
       .selectAll(".bubble")
       .data(vis.nodes)
@@ -160,6 +169,21 @@ class BubbleChart {
       .on("mouseleave", () => {
         d3.select("#tooltip").style("display", "none");
       })
+      .on('click', function (v, d) {
+        const isActive = d3.select(this).classed("active");
+        // limit 1 selection
+        d3.selectAll(".bubble.active").classed("active", false);
+        // toggle the selection
+        d3.select(this).classed("active", !isActive);
+  
+        const selectedGender = vis.chart.selectAll(".bubble.active").data();
+        
+        if (selectedGender[0] != null) {
+          vis.dispatcher.call("filterBreed", v, selectedGender[0]);
+        } else {
+          vis.dispatcher.call("filterBreed", v, null);
+        }
+      })
       .call(
         d3
           .drag() // call specific function when circle is dragged
@@ -168,6 +192,7 @@ class BubbleChart {
           .on("end", dragended)
       );
 
+    // drag function
     function dragstarted(event, d) {
       if (!event.active) vis.simulation.alphaTarget(0.03).restart();
       d.fx = d.x;
@@ -183,6 +208,7 @@ class BubbleChart {
       d.fy = null;
     }
 
+    // label first line
     const label = vis.chart
       .selectAll(".label")
       .data(vis.nodes)
@@ -198,11 +224,12 @@ class BubbleChart {
         (exit) => exit.remove()
       )
       .text(function (d) {
-        return (d.value / vis.data.length) * 100 > 1
-          ? ((d.value / vis.data.length) * 100).toFixed(2) + "%"
+        return (d.value / vis.filtereddata.length) * 100 > 1
+          ? ((d.value / vis.filtereddata.length) * 100).toFixed(2) + "%"
           : "";
       });
 
+    // label second line
     const label1 = vis.chart
       .selectAll(".label1")
       .data(vis.nodes)
@@ -218,9 +245,10 @@ class BubbleChart {
         (exit) => exit.remove()
       )
       .text(function (d) {
-        return (d.value / vis.data.length) * 100 > 1 ? d.breed : "";
+        return (d.value / vis.filtereddata.length) * 100 > 1 ? d.breed : "";
       });
 
+    // simulation function for nodes moving
     vis.simulation
       .nodes(vis.nodes)
       .on("tick", function (d) {

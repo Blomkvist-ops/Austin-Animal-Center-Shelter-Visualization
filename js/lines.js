@@ -8,7 +8,7 @@ class Line {
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: 1300,
-            containerHeight: 400,
+            containerHeight: 250,
             margin: { top: 15, right: 60, bottom: 30, left: 100 },
             tooltipPadding: 15,
             colors: ["#F9F3B9", "#E5CD6C", "#ba7f4e", "#8C6239", "#2F1313"],

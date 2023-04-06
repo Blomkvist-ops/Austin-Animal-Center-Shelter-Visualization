@@ -1,21 +1,12 @@
 const parseTime = d3.timeParse("%m-%d");
+
+let selectBreed;
+let selectAge;
+let dispatcher = d3.dispatch('filterBreed', 'filterAge');
+
 // load the intakes data
-
-
-d3.csv("data/aac_intakes.csv").then((data) => {
-  d3.csv("data/aac_outcomes.csv").then((data2) => {
-    let timeline = new timeLine({ parentElement: "#timeline" }, data, data2);
-    timeline.updateVis();
-
-    console.log(timeline.getSelectedDomain())
-
-    let lines = new Line({ parentElement: "#line-chart" }, data, data2);
-    lines.updateVis();
-  });
-});
-
-
 d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
+
   data.forEach((d) => {
     // Preprocess age
     if (d.age_upon_outcome.includes("months")) {
@@ -26,6 +17,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       d.age_upon_outcome = years;
     }
 
+    // Preprocess age group
     if (d.age_upon_outcome < 3) d.age_group = "Baby";
     else if (d.age_upon_outcome < 5) d.age_group = "Young";
     else if (d.age_upon_outcome < 10) d.age_group = "Mature";
@@ -36,9 +28,10 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
     d.time_in_shelter = days;
   });
 
-  let bubble = new BubbleChart({ parentElement: "#bubble-chart" }, data);
-  let barChart = new BarChart({ parentElement: "#bar-chart" }, data);
-  let heatMap = new HeatMap({ parentElement: "#heat-map" }, data);
+  // create graphs
+  let bubble = new BubbleChart({ parentElement: "#bubble-chart" }, data, selectAge, dispatcher);
+  let barChart = new BarChart({ parentElement: "#bar-chart" }, data, selectBreed, dispatcher);
+  let heatMap = new HeatMap({ parentElement: "#heat-map" }, data, selectBreed, selectAge, dispatcher);
   bubble.updateVis();
   barChart.updateVis();
   heatMap.updateVis();
@@ -61,22 +54,81 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       return selected.includes(d.animal_type);
     });
 
+    heatMap.data = data.filter((d) => {
+      return selected.includes(d.animal_type);
+    });
+
     // All categories are shown when no categories are active
     if (selected.length == 0) {
       bubble.data = data;
       barChart.data = data;
+      heatMap.data = data;
     }
 
     bubble.updateVis();
     barChart.updateVis();
+    heatMap.updateVis();
+  });
+
+  dispatcher.on('filterBreed', breed => {
+    if (breed == null) {
+
+      barChart.data = data;
+      barChart.selectBreed = undefined;
+
+      heatMap.data = data;
+      heatMap.selectBreed = undefined;
+
+      // lines.data = data;
+      // lines.data2 = data;
+      // lines.selectBreed = undefined;
+    }
+    else {
+      selectBreed = breed;
+      barChart.selectBreed = breed;
+      heatMap.selectBreed = breed;
+      //lines.selectBreed = breed;
+    }
+    barChart.updateVis();
+    heatMap.updateVis();
+    //lines.updateVis();
+  });
+
+  dispatcher.on('filterAge', age => {
+    if (age == null) {
+
+      bubble.data = data;
+      barChart.selectAge = undefined;
+
+      heatMap.data = data;
+      heatMap.selectAge = undefined;
+
+      // lines.data = data;
+      // lines.data2 = data;
+      // lines.selectBreed = undefined;
+    }
+    else {
+      selectBreed = age;
+      bubble.selectAge = age;
+      heatMap.selectAge = age;
+      //lines.selectBreed = breed;
+    }
+    bubble.updateVis();
+    heatMap.updateVis();
+    //lines.updateVis();
   });
 });
 
-// d3.csv("data/aac_intakes.csv").then((data) => {
-//   d3.csv("data/aac_outcomes.csv").then((data2) => {
-//     let lines = new Line({ parentElement: "#line-chart" }, data, data2);
-//     lines.updateVis();
-//   });
-// });
+  // create line chart
 
+d3.csv("data/aac_intakes.csv").then((data) => {
+  d3.csv("data/aac_outcomes.csv").then((data2) => {
+    let timeline = new timeLine({ parentElement: "#timeline" }, data, data2);
+    timeline.updateVis();
 
+    console.log(timeline.getSelectedDomain())
+
+    let lines = new Line({ parentElement: "#line-chart" }, data, data2);
+    lines.updateVis();
+  });
+});
