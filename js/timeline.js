@@ -1,4 +1,4 @@
-class Line {
+class timeLine {
     /**
      * Class constructor with initial configuration
      * @param {Object}
@@ -8,15 +8,16 @@ class Line {
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: 1300,
-            containerHeight: 400,
+            containerHeight: 200,
             margin: { top: 15, right: 60, bottom: 30, left: 100 },
-            tooltipPadding: 15,
-            colors: ["#F9F3B9", "#E5CD6C", "#ba7f4e", "#8C6239", "#2F1313"],
+            tooltipPadding: 15
         }
         this.data = _data;
         this.data2 = _data2;
         this.initVis();
     }
+
+
     initVis() {
         let vis = this;
 
@@ -30,27 +31,16 @@ class Line {
         vis.width = vis.config.containerWidth - vis.config.margin.left - vis.config.margin.right;
         vis.height = vis.config.containerHeight - vis.config.margin.top - vis.config.margin.bottom;
 
-        vis.keys = ["intake", "outcome"]
-
-        vis.colorScale = d3.scaleOrdinal()
-            .domain(vis.keys)
-            .range([vis.config.colors[1], vis.config.colors[2]])
+        // vis.keys = ["intake", "outcome"]
 
         vis.xScale = d3.scaleTime()
             .range([0, vis.width]);
-
-        // vis.xScaleFocus = d3.scaleTime()
-        //     .range([0, vis.config.width]);
 
         vis.yScale = d3.scaleLinear()
             .range([vis.height, 0]);
 
         vis.yScaleR = d3.scaleLinear()
             .range([vis.height, 0]);
-
-        // vis.yScaleFocus = d3.scaleLinear()
-        //     .range([vis.config.height, 0])
-        //     .nice();
 
         // Initialize axes
         vis.xAxis = d3.axisBottom(vis.xScale)
@@ -59,14 +49,10 @@ class Line {
                 return formatDate(new Date(d))
             });
 
-
-        vis.yAxis = d3.axisLeft(vis.yScale)
-            .tickPadding(10);
-
         vis.yAxisR = d3.axisRight(vis.yScaleR)
-            .tickPadding(10)
+            // .tickPadding(10)
+            .ticks(5)
             .tickFormat(d3.format("d"));
-
 
         // Define size of SVG drawing area
         vis.svg = d3.select(vis.config.parentElement)
@@ -82,30 +68,44 @@ class Line {
             .attr('class', 'axis x-axis')
             .attr('transform', `translate(0,${vis.height})`);
 
-        // Append y-axis group
-        vis.yAxisG = vis.chart.append('g')
-            .attr('class', 'axis y-axis');
-
         vis.yAxisGR = vis.chart.append('g')
             .attr('class', 'axis y-axis')
             .attr("transform", "translate(" + vis.width + " ,+15)");
 
 
+
         // Append both axis titles
         vis.chart.append('text')
-            .attr('class', 'axis-title')
-            .attr('y', 5)
-            .attr('x', vis.width + 150)
+            .attr('class', 'timeline-title')
+            .attr('y', 0)
+            .attr('x', vis.width / 2)
             .attr('dy', '.71em')
             .style('text-anchor', 'end')
-            .text('Net Number');
+            .text('Timeline Filter ');
 
-        vis.chart.append('text')
-            .attr('class', 'axis-title')
-            .attr('x', 0)
-            .attr('y', 5)
-            .attr('dy', '.71em')
-            .text('Number of Intake/outcome');
+        // vis.chart.append('text')
+        //     .attr('class', 'axis-title')
+        //     .attr('x', 0)
+        //     .attr('y', 5)
+        //     .attr('dy', '.71em')
+        //     .text('Net');
+
+        vis.brushG = vis.chart.append('g')
+            .attr('class', 'brush x-brush');
+
+
+        // Initialize brush component
+        vis.brush = d3.brushX()
+            .extent([[0, 0], [vis.width, vis.height]])
+            .on('brush', function({selection}) {
+                if (selection) vis.brushed(selection);
+            })
+            .on('end', function({selection}) {
+                if (!selection) vis.brushed(null);
+            });
+
+
+        vis.updateVis()
 
     }
 
@@ -175,30 +175,9 @@ class Line {
 
         vis.sortedNet.sort(function(a,b){return a.year-b.year})
 
-        vis.intakeArr.sort(function(a, b){
-            return parseTime(a[0]) - parseTime(b[0])}
-        )
-        vis.outcomeArr.sort(function(a, b){
-            return parseTime(a[0]) - parseTime(b[0])}
-        )
-
-        vis.mygroup = [0,1]
-        vis.stackedData = d3.stack()
-            .keys(vis.mygroup)
-            .value(function(d, key){
-                return d.values[key].val
-            })(groupData)
-
-        // sort stacked data to get correct stacked line chart
-        this.stackedData.forEach(arr => {
-            arr.sort(function(a,b) {
-                return parseTime(a.data.key) - parseTime(b.data.key)})
-        })
-
-
         vis.xScale.domain([new Date('2013-10-01'), new Date('2018-05-01')]);
-        vis.yScale.domain([0, 4800]);
-        vis.yScaleR.domain([-1500, 1500]);
+        vis.yScaleR.domain([-600, 600]);
+
 
         vis.renderVis();
     }
@@ -208,92 +187,17 @@ class Line {
         let vis = this;
         const parseTime = d3.timeParse("%Y-%m")
 
-
-        vis.stakcedline = vis.chart
-            .selectAll(".lines")
-            .data(vis.stackedData)
-            .enter()
-            .append("path")
-            .style("fill", function(d) { name = vis.keys[d.key] ;  return vis.colorScale(name); })
-            .attr("d", d3.area()
-                .x(function(d, i) {
-                    return vis.xScale(parseTime(d.data.key));
-                })
-                .y0(function(d) {
-                    return vis.yScale(d[0]);
-                })
-                .y1(function(d) { return vis.yScale(d[1]); })
-            )
-
         //Add net line
-        const line = vis.chart.append("path")
+        vis.netline = vis.chart.append("path")
             .datum(vis.sortedNet)
             .attr("fill", "none")
             .attr("stroke", "black")
-            .attr("stroke-width", 3)
+            .attr("stroke-width", 1)
             .attr("d", d3.line()
                 .x(function(d) {
                     return vis.xScale(d.year) })
                 .y(function(d) { return vis.yScaleR(d.value[0]) })
             )
-
-
-        const circles = vis.chart.selectAll('.point')
-            .data(vis.sortedNet)
-            .join('circle')
-            .attr('class', 'point')
-            .attr('r', 4)
-            .attr('cy', d => vis.yScaleR(d.value[0]))
-            .attr('cx', d => vis.xScale(d.year))
-
-        // add tooltips
-        circles.on("mouseover", (event, d) => {
-            d3.select("#tooltip")
-                .style("display", "block")
-                .style("left", (event.pageX + vis.config.tooltipPadding) + "px")
-                .style("top", (event.pageY + vis.config.tooltipPadding) + "px")
-                .html(`
-					<div class="tooltip-title">Time: ${formatDate(d.year)}</div>
-					<div>
-						<i>Type: General</i>
-					</div>
-					<ul>
-						<li>Intake Num: ${d.value[1]}</li>
-						<li>Outcome Num: ${d.value[2]}</li>
-						<li>Net Num: ${d.value[0]}</li>
-					</ul>
-				`);
-        })
-            .on("mouseleave", () => {
-                d3.select("#tooltip").style("display", "none");
-            });
-
-        // add legend
-        let size = 20
-        vis.chart.selectAll("myarea")
-            .data(vis.mygroup)
-            .enter()
-            .append("rect")
-            .attr("x", vis.width - 150)
-            .attr("y", function(d,i){ return 10 + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
-            .attr("width", size)
-            .attr("height", size)
-            .style("fill", function(d){
-                name = vis.keys[d] ;  return vis.colorScale(name);})
-
-        // Add name for each legend
-        vis.chart.selectAll("mylabels")
-            .data(vis.mygroup)
-            .enter()
-            .append("text")
-            .attr("x", vis.width - size * 1.2 - 100)
-            .attr("y", function(d,i){ return 10 + i*(size+5) + (size / 2) + 5})
-            .text(function(d){
-                if (d == 0) {
-                    return "Intake"
-                } else {
-                    return "Outcome"
-                }})
 
         // Add label for net line
         vis.chart.append("text")
@@ -310,15 +214,44 @@ class Line {
             .call(vis.xAxis)
             .call(g => g.select('.domain').remove());
 
-        vis.yAxisG
-            .call(vis.yAxis)
-            .call(g => g.select('.domain').remove())
-
         vis.yAxisGR
             .call(vis.yAxisR)
             .call(g => g.select('.domain').remove())
+
+        const defaultBrushSelection = [0,0];
+
+        vis.brushG
+            .call(vis.brush)
+            .call(vis.brush.move, defaultBrushSelection);
+
     }
+
+
+    /**
+     * React to brush events
+     */
+    brushed(selection) {
+        let vis = this;
+
+        // Check if the brush is still active or if it has been removed
+        if (selection) {
+            if (selection[0] != selection[1]) {
+                vis.selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
+            } else {
+                vis.selectedDomain = null
+            }
+        }
+    }
+
+
+    getSelectedDomain() {
+        let vis = this;
+        return vis.selectedDomain;
+    }
+
 }
+
+
 
 function formatDate(date) {
     let d = new Date(date),
@@ -331,4 +264,6 @@ function formatDate(date) {
 
     return [year, month].join("-");
 }
+
+
 

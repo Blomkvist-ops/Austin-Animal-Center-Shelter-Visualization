@@ -1,5 +1,20 @@
 const parseTime = d3.timeParse("%m-%d");
 // load the intakes data
+
+
+d3.csv("data/aac_intakes.csv").then((data) => {
+  d3.csv("data/aac_outcomes.csv").then((data2) => {
+    let timeline = new timeLine({ parentElement: "#timeline" }, data, data2);
+    timeline.updateVis();
+
+    console.log(timeline.getSelectedDomain())
+
+    let lines = new Line({ parentElement: "#line-chart" }, data, data2);
+    lines.updateVis();
+  });
+});
+
+
 d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
   data.forEach((d) => {
     // Preprocess age
@@ -57,9 +72,11 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
   });
 });
 
-d3.csv("data/aac_intakes.csv").then((data) => {
-  d3.csv("data/aac_outcomes.csv").then((data2) => {
-    let lines = new Line({ parentElement: "#line-chart" }, data, data2);
-    lines.updateVis();
-  });
-});
+// d3.csv("data/aac_intakes.csv").then((data) => {
+//   d3.csv("data/aac_outcomes.csv").then((data2) => {
+//     let lines = new Line({ parentElement: "#line-chart" }, data, data2);
+//     lines.updateVis();
+//   });
+// });
+
+
