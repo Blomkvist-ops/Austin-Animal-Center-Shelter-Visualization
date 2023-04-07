@@ -2,7 +2,41 @@ const parseTime = d3.timeParse("%m-%d");
 
 let selectBreed;
 let selectAge;
-let dispatcher = d3.dispatch('filterBreed', 'filterAge');
+let selectTime;
+let dispatcher = d3.dispatch('filterBreed', 'filterAge', 'filterTime');
+
+
+
+// create line chart
+d3.csv("data/aac_intakes.csv").then((data) => {
+  d3.csv("data/aac_outcomes.csv").then((data2) => {
+    let timeline = new timeLine({ parentElement: "#timeline" }, data, data2,
+        selectBreed, selectAge, dispatcher);
+    timeline.updateVis();
+
+
+
+
+    let lines = new Line({ parentElement: "#line-chart" }, data, data2, selectBreed, selectAge, selectTime, dispatcher);
+    lines.updateVis();
+    dispatcher.on('filterTime', time => {
+      if (time == null) {
+        lines.data = data;
+        lines.data2 = data2;
+        lines.selectTime = undefined;
+      }
+      else {
+        // console.log(time)
+        selectTime = time;
+        lines.selectTime = time;
+      }
+      lines.updateVis();
+    });
+
+
+  });
+});
+
 
 // load the intakes data
 d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
@@ -117,18 +151,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
     heatMap.updateVis();
     //lines.updateVis();
   });
+
 });
 
-  // create line chart
 
-d3.csv("data/aac_intakes.csv").then((data) => {
-  d3.csv("data/aac_outcomes.csv").then((data2) => {
-    let timeline = new timeLine({ parentElement: "#timeline" }, data, data2);
-    timeline.updateVis();
-
-    console.log(timeline.getSelectedDomain())
-
-    let lines = new Line({ parentElement: "#line-chart" }, data, data2);
-    lines.updateVis();
-  });
-});

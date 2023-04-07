@@ -4,7 +4,7 @@ class timeLine {
      * @param {Object}
      * @param {Array}
      */
-    constructor(_config, _data, _data2) {
+    constructor(_config, _data, _data2, _selectBreed, _selectAge, _dispatcher) {
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: 1300,
@@ -14,6 +14,9 @@ class timeLine {
         }
         this.data = _data;
         this.data2 = _data2;
+        this.selectBreed = _selectBreed;
+        this.selectAge = _selectAge;
+        this.dispatcher = _dispatcher;
         this.initVis();
     }
 
@@ -36,8 +39,8 @@ class timeLine {
         vis.xScale = d3.scaleTime()
             .range([0, vis.width]);
 
-        vis.yScale = d3.scaleLinear()
-            .range([vis.height, 0]);
+        // vis.yScale = d3.scaleLinear()
+        //     .range([vis.height, 0]);
 
         vis.yScaleR = d3.scaleLinear()
             .range([vis.height, 0]);
@@ -72,8 +75,6 @@ class timeLine {
             .attr('class', 'axis y-axis')
             .attr("transform", "translate(" + vis.width + " ,+15)");
 
-
-
         // Append both axis titles
         vis.chart.append('text')
             .attr('class', 'timeline-title')
@@ -95,13 +96,22 @@ class timeLine {
 
 
         // Initialize brush component
+
+        let selection = [0,0]
         vis.brush = d3.brushX()
             .extent([[0, 0], [vis.width, vis.height]])
             .on('brush', function({selection}) {
-                if (selection) vis.brushed(selection);
+                if (selection) {
+                    if (selection[0] != selection[1]) {
+
+                        vis.selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
+                        vis.dispatcher.call("filterTime", this, vis.selectedDomain);
+                    }
+                }
+                //vis.brushed(selection);
             })
             .on('end', function({selection}) {
-                if (!selection) vis.brushed(null);
+                if (!selection) vis.dispatcher.call("filterTime",this, null);
             });
 
 
@@ -113,6 +123,8 @@ class timeLine {
         let vis = this;
 
         // get intake data group by date
+
+
         let groupByDate = d3.group(this.data, g => {
             return g.datetime.substring(0, 7);
         });
@@ -227,27 +239,23 @@ class timeLine {
     }
 
 
-    /**
-     * React to brush events
-     */
-    brushed(selection) {
-        let vis = this;
+    // /**
+    //  * React to brush events
+    //  */
+    // brushed(selection) {
+    //     let vis = this;
+    //
+    //     // Check if the brush is still active or if it has been removed
+    //     if (selection) {
+    //         if (selection[0] != selection[1]) {
+    //             vis.selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
+    //             vis.dispatcher.call("filterTime", this, vis.selectedDomain);
+    //         } else {
+    //             vis.dispatcher.call("filterTime",this, null);
+    //         }
+    //     }
+    // }
 
-        // Check if the brush is still active or if it has been removed
-        if (selection) {
-            if (selection[0] != selection[1]) {
-                vis.selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
-            } else {
-                vis.selectedDomain = null
-            }
-        }
-    }
-
-
-    getSelectedDomain() {
-        let vis = this;
-        return vis.selectedDomain;
-    }
 
 }
 

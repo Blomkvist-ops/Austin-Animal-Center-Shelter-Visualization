@@ -4,7 +4,7 @@ class Line {
      * @param {Object}
      * @param {Array}
      */
-    constructor(_config, _data, _data2) {
+    constructor(_config, _data, _data2, _selectBreed, _selectAge, _selectTime, _dispatcher) {
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: 1300,
@@ -15,6 +15,10 @@ class Line {
         }
         this.data = _data;
         this.data2 = _data2;
+        this.selectBreed = _selectBreed;
+        this.selectAge = _selectAge;
+        this.selectTime = _selectTime;
+        this.dispatcher = _dispatcher;
         this.initVis();
     }
     initVis() {
@@ -112,8 +116,44 @@ class Line {
     updateVis() {
         let vis = this;
 
+        vis.filtereddata = vis.data;
+        vis.filtereddata2 = vis.data2;
+        if (vis.selectBreed != null) {
+            vis.filtereddata = vis.data.filter(d => d.breed == vis.selectBreed.breed);
+            vis.filtereddata2 = vis.filtereddata2.filter(d => d.breed == vis.selectBreed.breed);
+
+        }
+
+        if (vis.selectAge != null) {
+            vis.filtereddata = vis.filtereddata.filter(d => d.age_group == vis.selectAge.age);
+            vis.filtereddata2 = vis.filtereddata2.filter(d => d.age_group == vis.selectAge.age);
+        }
+
+        const tmpTimeFormat = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L");
+        const getMinDate = function(d1, d2) {
+            if (d1 > d2) return d2
+            else return d1
+        }
+        const getMaxDate = function (d1, d2) {
+            if (d1 < d2) return d2
+            else return d1
+        }
+
+        if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
+            let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1])
+            let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1])
+            vis.filtereddata = vis.filtereddata.filter(d => {
+                let currDate = tmpTimeFormat(d.datetime)
+                return currDate >= minDate && currDate <= maxDate
+            });
+            vis.filtereddata2 = vis.filtereddata2.filter(d =>{
+                let currDate = tmpTimeFormat(d.datetime)
+                return currDate >= minDate && currDate <= maxDate
+            });
+        }
+
         // get intake data group by date
-        let groupByDate = d3.group(this.data, g => {
+        let groupByDate = d3.group(vis.filtereddata, g => {
             return g.datetime.substring(0, 7);
         });
 
@@ -123,7 +163,7 @@ class Line {
         })
 
         // get outcome data group by date
-        let groupByDate2 = d3.group(this.data2, g => {
+        let groupByDate2 = d3.group(this.filtereddata2, g => {
             return g.datetime.substring(0, 7);
         });
 
@@ -196,7 +236,13 @@ class Line {
         })
 
 
-        vis.xScale.domain([new Date('2013-10-01'), new Date('2018-05-01')]);
+        if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
+            let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1])
+            let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1])
+            vis.xScale.domain([minDate, maxDate]);
+        } else {
+            vis.xScale.domain([new Date('2013-10-01'), new Date('2018-05-01')]);
+        }
         vis.yScale.domain([0, 4800]);
         vis.yScaleR.domain([-1500, 1500]);
 
@@ -296,14 +342,14 @@ class Line {
                 }})
 
         // Add label for net line
-        vis.chart.append("text")
-            .attr("transform", "translate(" + (vis.width - 50) + "," +
-                (vis.yScaleR(vis.sortedNet[vis.sortedNet.length - 1].value[0]) + 15) + ")")
-            .attr("class", "net-label")
-            .attr("dy", ".35em")
-            .attr("text-anchor", "start")
-            .style("fill", "black")
-            .text("Net");
+        // vis.chart.append("text")
+        //     .attr("transform", "translate(" + (vis.width - 50) + "," +
+        //         (vis.yScaleR(vis.sortedNet[vis.sortedNet.length - 1].value[0]) + 15) + ")")
+        //     .attr("class", "net-label")
+        //     .attr("dy", ".35em")
+        //     .attr("text-anchor", "start")
+        //     .style("fill", "black")
+        //     .text("Net");
 
 
         vis.xAxisG
