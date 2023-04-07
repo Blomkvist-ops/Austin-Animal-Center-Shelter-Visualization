@@ -43,18 +43,12 @@ class Line {
         vis.xScale = d3.scaleTime()
             .range([0, vis.width]);
 
-        // vis.xScaleFocus = d3.scaleTime()
-        //     .range([0, vis.config.width]);
 
         vis.yScale = d3.scaleLinear()
             .range([vis.height, 0]);
 
         vis.yScaleR = d3.scaleLinear()
             .range([vis.height, 0]);
-
-        // vis.yScaleFocus = d3.scaleLinear()
-        //     .range([vis.config.height, 0])
-        //     .nice();
 
         // Initialize axes
         vis.xAxis = d3.axisBottom(vis.xScale)
@@ -116,6 +110,8 @@ class Line {
     updateVis() {
         let vis = this;
 
+        selectTime = [new Date("2013-05-01"), new Date("2018-10-01")]
+
         vis.filtereddata = vis.data;
         vis.filtereddata2 = vis.data2;
         if (vis.selectBreed != null) {
@@ -130,6 +126,8 @@ class Line {
         }
 
         const tmpTimeFormat = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L");
+        const tmpTimeFormat2 = d3.timeParse("%Y-%m-%dT%H:%M:%S");
+
         const getMinDate = function(d1, d2) {
             if (d1 > d2) return d2
             else return d1
@@ -147,10 +145,13 @@ class Line {
                 return currDate >= minDate && currDate <= maxDate
             });
             vis.filtereddata2 = vis.filtereddata2.filter(d =>{
-                let currDate = tmpTimeFormat(d.datetime)
+                let currDate = tmpTimeFormat2(d.datetime)
                 return currDate >= minDate && currDate <= maxDate
             });
         }
+
+        // console.log(vis.filtereddata2[0].datetime)
+        // console.log(tmpTimeFormat2(vis.filtereddata2[0].datetime))
 
         // get intake data group by date
         let groupByDate = d3.group(vis.filtereddata, g => {
@@ -215,6 +216,8 @@ class Line {
 
         vis.sortedNet.sort(function(a,b){return a.year-b.year})
 
+
+
         vis.intakeArr.sort(function(a, b){
             return parseTime(a[0]) - parseTime(b[0])}
         )
@@ -236,6 +239,8 @@ class Line {
         })
 
 
+        // console.log(vis.sortedNet)
+
         if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
             let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1])
             let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1])
@@ -254,7 +259,6 @@ class Line {
         let vis = this;
         const parseTime = d3.timeParse("%Y-%m")
 
-
         vis.stakcedline = vis.chart
             .selectAll(".lines")
             .data(vis.stackedData)
@@ -272,7 +276,7 @@ class Line {
             )
 
         //Add net line
-        const line = vis.chart.append("path")
+        let line = vis.chart.append("path")
             .datum(vis.sortedNet)
             .attr("fill", "none")
             .attr("stroke", "black")
@@ -284,7 +288,7 @@ class Line {
             )
 
 
-        const circles = vis.chart.selectAll('.point')
+        let circles = vis.chart.selectAll('.point')
             .data(vis.sortedNet)
             .join('circle')
             .attr('class', 'point')
