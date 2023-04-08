@@ -150,9 +150,6 @@ class Line {
             });
         }
 
-        // console.log(vis.filtereddata2[0].datetime)
-        // console.log(tmpTimeFormat2(vis.filtereddata2[0].datetime))
-
         // get intake data group by date
         let groupByDate = d3.group(vis.filtereddata, g => {
             return g.datetime.substring(0, 7);
@@ -263,24 +260,34 @@ class Line {
             .selectAll(".lines")
             .data(vis.stackedData)
             .join(
-                (enter) => enter.append("path").attr("class", "stackedline"),
+                (enter) => enter.append("path")
+                    .attr("d", d3.area()
+                        .x(function(d, i) {
+                            return vis.xScale(parseTime(d.data.key));
+                        })
+                        .y0(function(d) {
+                            return vis.yScale(d[0]);
+                        })
+                        .y1(function(d) { return vis.yScale(d[1]); })
+                    ),
                 (update) => update,
                 (exit) => exit.remove()
             )
             .style("fill", function(d) { name = vis.keys[d.key] ;  return vis.colorScale(name); })
-            .attr("d", d3.area()
-                .x(function(d, i) {
-                    return vis.xScale(parseTime(d.data.key));
-                })
-                .y0(function(d) {
-                    return vis.yScale(d[0]);
-                })
-                .y1(function(d) { return vis.yScale(d[1]); })
-            )
+            // .attr("d", d3.area()
+            //     .x(function(d, i) {
+            //         return vis.xScale(parseTime(d.data.key));
+            //     })
+            //     .y0(function(d) {
+            //         return vis.yScale(d[0]);
+            //     })
+            //     .y1(function(d) { return vis.yScale(d[1]); })
+            // )
 
         //Add net line
         let line = vis.chart.append("path")
             .datum(vis.sortedNet)
+            .join("path")
             .attr("fill", "none")
             .attr("stroke", "black")
             .attr("stroke-width", 3)
@@ -337,10 +344,16 @@ class Line {
         // Add name for each legend
         vis.chart.selectAll("mylabels")
             .data(vis.mygroup)
-            .enter()
-            .append("text")
-            .attr("x", vis.width - size * 1.2 - 100)
-            .attr("y", function(d,i){ return 10 + i*(size+5) + (size / 2) + 5})
+            .join((enter) =>
+                    enter
+                        .append("text")
+                        .attr("x", vis.width - size * 1.2 - 100)
+                        .attr("y", function(d,i){ return 10 + i*(size+5) + (size / 2) + 5}),
+                (update) => update,
+                (exit) => exit.remove())
+            // .append("text")
+            // .attr("x", vis.width - size * 1.2 - 100)
+            // .attr("y", function(d,i){ return 10 + i*(size+5) + (size / 2) + 5})
             .text(function(d){
                 if (d == 0) {
                     return "Intake"
@@ -358,7 +371,7 @@ class Line {
         //     .style("fill", "black")
         //     .text("Net");
 
-        vis.stakcedline.exit().remove()
+        // vis.stakcedline.exit().remove()
 
 
         vis.xAxisG

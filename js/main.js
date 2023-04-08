@@ -23,12 +23,37 @@ d3.csv("data/aac_intakes.csv").then((data) => {
         lines.selectTime = undefined;
       }
       else {
-        // console.log(time)
         selectTime = time;
         lines.selectTime = time;
-      }
+
+        // filter data with timeline, put this in lines.js
+      //   const tmpTimeFormat = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L");
+      //   const tmpTimeFormat2 = d3.timeParse("%Y-%m-%dT%H:%M:%S");
+      //
+      //   const getMinDate = function(d1, d2) {
+      //     if (d1 > d2) return d2
+      //     else return d1
+      //   }
+      //   const getMaxDate = function (d1, d2) {
+      //     if (d1 < d2) return d2
+      //     else return d1
+      //   }
+      //
+      //   if (time[0] != time[1]) {
+      //     let minDate = getMinDate(time[0], time[1])
+      //     let maxDate = getMaxDate(time[0], time[1])
+      //     lines.data = data.filter(d => {
+      //       let currDate = tmpTimeFormat(d.datetime)
+      //       return currDate >= minDate && currDate <= maxDate
+      //     });
+      //     lines.data2 = data2.filter(d =>{
+      //       let currDate = tmpTimeFormat2(d.datetime)
+      //       return currDate >= minDate && currDate <= maxDate
+      //     });
+      //   }
+      // }
       lines.updateVis();
-    });
+    }});
 
 
   });
