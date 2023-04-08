@@ -128,7 +128,7 @@ class Line {
         const tmpTimeFormat = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L");
         const tmpTimeFormat2 = d3.timeParse("%Y-%m-%dT%H:%M:%S");
 
-        const getMinDate = function(d1, d2) {
+        const getMinDate = function (d1, d2) {
             if (d1 > d2) return d2
             else return d1
         }
@@ -144,7 +144,7 @@ class Line {
                 let currDate = tmpTimeFormat(d.datetime)
                 return currDate >= minDate && currDate <= maxDate
             });
-            vis.filtereddata2 = vis.filtereddata2.filter(d =>{
+            vis.filtereddata2 = vis.filtereddata2.filter(d => {
                 let currDate = tmpTimeFormat2(d.datetime)
                 return currDate >= minDate && currDate <= maxDate
             });
@@ -190,7 +190,7 @@ class Line {
 
         vis.outcomeArr.forEach(e => {
             if (groupByDate3.get(e[0]) == null) {
-                groupByDate3.set(e[0], [-e[1], 0 , e[1]])
+                groupByDate3.set(e[0], [-e[1], 0, e[1]])
             }
         })
 
@@ -204,40 +204,42 @@ class Line {
             let outcomeNum = e[1][2]
             groupData.push({
                 "key": e[0],
-                "values":[{"year": e[0], "name": "outcome", "val": outcomeNum},
-                    {"year": e[0], "name": "intake", "val": intakeNum}]
+                "values": [{ "year": e[0], "name": "outcome", "val": outcomeNum },
+                { "year": e[0], "name": "intake", "val": intakeNum }]
             })
         })
 
         vis.sortedNet = []
         vis.netArr.forEach(e => {
-            vis.sortedNet.push({"year":parseTime(e[0]), "value": e[1]})
+            vis.sortedNet.push({ "year": parseTime(e[0]), "value": e[1] })
         })
 
-        vis.sortedNet.sort(function(a,b){return a.year-b.year})
+        vis.sortedNet.sort(function (a, b) { return a.year - b.year })
 
 
 
-        vis.intakeArr.sort(function(a, b){
-            return parseTime(a[0]) - parseTime(b[0])}
+        vis.intakeArr.sort(function (a, b) {
+            return parseTime(a[0]) - parseTime(b[0])
+        }
         )
-        vis.outcomeArr.sort(function(a, b){
-            return parseTime(a[0]) - parseTime(b[0])}
+        vis.outcomeArr.sort(function (a, b) {
+            return parseTime(a[0]) - parseTime(b[0])
+        }
         )
 
-        vis.mygroup = [0,1]
+        vis.mygroup = [0, 1]
         vis.stackedData = d3.stack()
             .keys(vis.mygroup)
-            .value(function(d, key){
+            .value(function (d, key) {
                 return d.values[key].val
             })(groupData)
 
         // sort stacked data to get correct stacked line chart
         this.stackedData.forEach(arr => {
-            arr.sort(function(a,b) {
-                return parseTime(a.data.key) - parseTime(b.data.key)})
+            arr.sort(function (a, b) {
+                return parseTime(a.data.key) - parseTime(b.data.key)
+            })
         })
-
 
         // console.log(vis.sortedNet)
 
@@ -259,36 +261,61 @@ class Line {
         let vis = this;
         const parseTime = d3.timeParse("%Y-%m")
 
-        vis.stakcedline = vis.chart
-            .selectAll(".lines")
+        vis.chart
+            .selectAll("stackedline")
             .data(vis.stackedData)
+            .join("path")
+            .attr("class", "stackedline")
+            .style("fill", function (d) { name = vis.keys[d.key]; return vis.colorScale(name); })
+            // .join(
+            //     (enter) => enter.append("path").attr("class", "stackedline")
+            //     .style("fill", function (d) { name = vis.keys[d.key]; return vis.colorScale(name); }),
+            //     (update) => update,
+            //     (exit) => exit.remove()
+            // )
+            .attr("d", d3.area()
+                .x(function (d, i) {
+                    return vis.xScale(parseTime(d.data.key));
+                })
+                .y0(function (d) {
+                    return vis.yScale(d[0]);
+                })
+                .y1(function (d) { return vis.yScale(d[1]); })
+            );
+
+        //Add net line
+        // let line = vis.chart.selectAll("line")
+        //     .datum(vis.sortedNet)
+        //     .join("path")
+        //     .attr("fill", "none")
+        //     .attr("stroke", "black")
+        //     .attr("stroke-width", 3)
+        //     .attr("d", d3.line()
+        //         .x(function(d) {
+        //             return vis.xScale(d.year) })
+        //         .y(function(d) { return vis.yScaleR(d.value[0]) })
+        //     )
+
+        vis.chart
+            .selectAll("path")
+            .datum(vis.sortedNet)
             .join(
-                (enter) => enter.append("path").attr("class", "stackedline"),
+                (enter) =>
+                    enter
+                        .append("path")
+                        .attr("class", "line")
+                        .attr("fill", "none")
+                        .attr("stroke", "black")
+                        .attr("stroke-width", 3),
                 (update) => update,
                 (exit) => exit.remove()
             )
-            .style("fill", function(d) { name = vis.keys[d.key] ;  return vis.colorScale(name); })
-            .attr("d", d3.area()
-                .x(function(d, i) {
-                    return vis.xScale(parseTime(d.data.key));
-                })
-                .y0(function(d) {
-                    return vis.yScale(d[0]);
-                })
-                .y1(function(d) { return vis.yScale(d[1]); })
-            )
-
-        //Add net line
-        let line = vis.chart.append("path")
-            .datum(vis.sortedNet)
-            .attr("fill", "none")
-            .attr("stroke", "black")
-            .attr("stroke-width", 3)
             .attr("d", d3.line()
-                .x(function(d) {
-                    return vis.xScale(d.year) })
-                .y(function(d) { return vis.yScaleR(d.value[0]) })
-            )
+                .x(function (d) {
+                    return vis.xScale(d.year)
+                })
+                .y(function (d) { return vis.yScaleR(d.value[0]) })
+            );
 
 
         let circles = vis.chart.selectAll('.point')
@@ -325,28 +352,28 @@ class Line {
         let size = 20
         vis.chart.selectAll("myarea")
             .data(vis.mygroup)
-            .enter()
-            .append("rect")
+            .join("rect")
             .attr("x", vis.width - 150)
-            .attr("y", function(d,i){ return 10 + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
+            .attr("y", function (d, i) { return 10 + i * (size + 5) }) // 100 is where the first dot appears. 25 is the distance between dots
             .attr("width", size)
             .attr("height", size)
-            .style("fill", function(d){
-                name = vis.keys[d] ;  return vis.colorScale(name);})
+            .style("fill", function (d) {
+                name = vis.keys[d]; return vis.colorScale(name);
+            })
 
         // Add name for each legend
         vis.chart.selectAll("mylabels")
             .data(vis.mygroup)
-            .enter()
-            .append("text")
+            .join("text")
             .attr("x", vis.width - size * 1.2 - 100)
-            .attr("y", function(d,i){ return 10 + i*(size+5) + (size / 2) + 5})
-            .text(function(d){
+            .attr("y", function (d, i) { return 10 + i * (size + 5) + (size / 2) + 5 })
+            .text(function (d) {
                 if (d == 0) {
                     return "Intake"
                 } else {
                     return "Outcome"
-                }})
+                }
+            })
 
         // Add label for net line
         // vis.chart.append("text")
@@ -357,8 +384,6 @@ class Line {
         //     .attr("text-anchor", "start")
         //     .style("fill", "black")
         //     .text("Net");
-
-        vis.stakcedline.exit().remove()
 
 
         vis.xAxisG
