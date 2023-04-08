@@ -166,7 +166,47 @@ class HeatMap {
       vis.config.colors.length
     );
 
+    vis.legendData = vis.generateLegendData(orderedData);
+
     vis.renderVis(orderedData);
+  }
+
+  generateLegendData(orderedData) {
+    let vis = this;
+
+    if (orderedData.length === 0) {
+      // Return an empty array if there is no data
+      return [];
+    }
+
+    const initialLegendData = vis.groupSizes.map((size, i) => {
+      const start = vis.groupSizes.slice(0, i).reduce((a, b) => a + b, 0);
+      const end = start + size - 1;
+
+      // Ensure that the range is not empty
+      if (orderedData[start] && orderedData[end]) {
+        return {
+          color: vis.config.colors[i],
+          range: [orderedData[start].count, orderedData[end].count],
+        };
+      }
+      return null;
+    });
+
+    // Filter out any null values and then merge overlapping ranges
+    const filteredLegendData = initialLegendData.filter(
+      (item) => item !== null
+    );
+    const mergedLegendData = filteredLegendData.reduce((acc, item) => {
+      if (acc.length === 0 || item.range[0] > acc[acc.length - 1].range[1]) {
+        acc.push(item);
+      } else {
+        acc[acc.length - 1].range[1] = item.range[1];
+      }
+      return acc;
+    }, []);
+
+    return mergedLegendData;
   }
 
   calculateGroupSizes(length, numGroups) {
@@ -177,22 +217,20 @@ class HeatMap {
     for (let i = 0; i < numGroups; i++) {
       sizes.push(i < numGroups - remainder ? baseSize : baseSize + 1);
     }
-
     return sizes;
   }
 
   renderVis(orderedData) {
     let vis = this;
 
-    // Create a color scale with 5 ordinal groups based on the order property of the mergedData array
-    vis.colorScale = d3
-      .scaleOrdinal()
-      .domain(orderedData.map((d) => d.order))
-      .range(
-        vis.groupSizes.flatMap((size, i) =>
-          d3.range(size).map(() => vis.config.colors[i])
-        )
-      );
+    // Create a custom color scale function that takes the count as input and returns the corresponding color
+    vis.colorScale = (count) => {
+      for (const legendItem of vis.legendData) {
+        if (count >= legendItem.range[0] && count <= legendItem.range[1]) {
+          return legendItem.color;
+        }
+      }
+    };
 
     vis.chart
       .selectAll(".cell")
@@ -206,7 +244,7 @@ class HeatMap {
             .attr("y", (d) => vis.yScale(d.intakeCondition))
             .attr("width", vis.xScale.bandwidth())
             .attr("height", vis.yScale.bandwidth())
-            .attr("fill", (d) => vis.colorScale(d.order))
+            .attr("fill", (d) => vis.colorScale(d.count))
             .on("mouseover", (event, d) => {
               d3.select(event.currentTarget).classed("rect-hover", true);
               d3.select("#tooltip")
@@ -225,21 +263,12 @@ class HeatMap {
             .attr("y", (d) => vis.yScale(d.intakeCondition))
             .attr("width", vis.xScale.bandwidth())
             .attr("height", vis.yScale.bandwidth())
-            .attr("fill", (d) => vis.colorScale(d.order)),
+            .attr("fill", (d) => vis.colorScale(d.count)),
         (exit) => exit.remove()
       );
 
     vis.xAxisG.call(vis.xAxis);
     vis.yAxisG.call(vis.yAxis);
-
-    vis.legendData = vis.groupSizes.map((size, i) => {
-      const start = vis.groupSizes.slice(0, i).reduce((a, b) => a + b, 0);
-      const end = start + size - 1;
-      return {
-        color: vis.config.colors[i],
-        range: [orderedData[start].count, orderedData[end].count],
-      };
-    });
 
     vis.legendItems = vis.legend
       .selectAll(".legend-item")
@@ -271,7 +300,9 @@ class HeatMap {
       .join("text")
       .attr("x", 20)
       .attr("y", 12)
-      .text((d) => `${d.range[0]} - ${d.range[1]}`)
+      .text((d) =>
+        d.range[0] === d.range[1] ? d.range[0] : `${d.range[0]} - ${d.range[1]}`
+      )
       .style("font-size", "12px");
   }
 }
