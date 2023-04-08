@@ -262,8 +262,11 @@ class Line {
         vis.stakcedline = vis.chart
             .selectAll(".lines")
             .data(vis.stackedData)
-            .enter()
-            .append("path")
+            .join(
+                (enter) => enter.append("path").attr("class", "stackedline"),
+                (update) => update,
+                (exit) => exit.remove()
+            )
             .style("fill", function(d) { name = vis.keys[d.key] ;  return vis.colorScale(name); })
             .attr("d", d3.area()
                 .x(function(d, i) {
@@ -355,10 +358,12 @@ class Line {
         //     .style("fill", "black")
         //     .text("Net");
 
+        vis.stakcedline.exit().remove()
+
 
         vis.xAxisG
             .call(vis.xAxis)
-            .call(g => g.select('.domain').remove());
+            .call(g => g.select('.lines').remove());
 
         vis.yAxisG
             .call(vis.yAxis)

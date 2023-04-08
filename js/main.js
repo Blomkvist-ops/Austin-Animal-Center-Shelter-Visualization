@@ -14,9 +14,6 @@ d3.csv("data/aac_intakes.csv").then((data) => {
         selectBreed, selectAge, dispatcher);
     timeline.updateVis();
 
-
-
-
     let lines = new Line({ parentElement: "#line-chart" }, data, data2, selectBreed, selectAge, selectTime, dispatcher);
     lines.updateVis();
     dispatcher.on('filterTime', time => {
@@ -63,9 +60,25 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
   });
 
   // create graphs
-  let bubble = new BubbleChart({ parentElement: "#bubble-chart" }, data, selectAge, dispatcher);
-  let barChart = new BarChart({ parentElement: "#bar-chart" }, data, selectBreed, dispatcher);
-  let heatMap = new HeatMap({ parentElement: "#heat-map" }, data, selectBreed, selectAge, dispatcher);
+  let bubble = new BubbleChart(
+    { parentElement: "#bubble-chart" },
+    data,
+    selectAge,
+    dispatcher
+  );
+  let barChart = new BarChart(
+    { parentElement: "#bar-chart" },
+    data,
+    selectBreed,
+    dispatcher
+  );
+  let heatMap = new HeatMap(
+    { parentElement: "#heat-map" },
+    data,
+    selectBreed,
+    selectAge,
+    dispatcher
+  );
   bubble.updateVis();
   barChart.updateVis();
   heatMap.updateVis();
@@ -104,7 +117,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
     heatMap.updateVis();
   });
 
-  dispatcher.on('filterBreed', breed => {
+  dispatcher.on("filterBreed", (breed) => {
     if (breed == null) {
 
       barChart.data = data;
@@ -116,8 +129,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       // lines.data = data;
       // lines.data2 = data;
       // lines.selectBreed = undefined;
-    }
-    else {
+    } else {
       selectBreed = breed;
       barChart.selectBreed = breed;
       heatMap.selectBreed = breed;
@@ -128,9 +140,8 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
     //lines.updateVis();
   });
 
-  dispatcher.on('filterAge', age => {
+  dispatcher.on("filterAge", (age) => {
     if (age == null) {
-
       bubble.data = data;
       barChart.selectAge = undefined;
 
@@ -140,8 +151,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       // lines.data = data;
       // lines.data2 = data;
       // lines.selectBreed = undefined;
-    }
-    else {
+    } else {
       selectBreed = age;
       bubble.selectAge = age;
       heatMap.selectAge = age;
@@ -151,7 +161,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
     heatMap.updateVis();
     //lines.updateVis();
   });
-
 });
+
 
 

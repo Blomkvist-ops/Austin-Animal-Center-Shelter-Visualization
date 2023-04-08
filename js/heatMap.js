@@ -61,32 +61,44 @@ class HeatMap {
       .attr("y", 0)
       .attr("dy", "12")
       .text("Intake Condition / Intake Type / Count");
+
+    // Create the legend
+    vis.legend = vis.chart
+      .append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(${vis.width}, 0)`);
+
+    vis.legendItemHeight = 20;
   }
 
   updateVis() {
     // Update visualization settings based on the data
     let vis = this;
 
-    vis.filtereddata = vis.data;
+    vis.filteredData = vis.data;
 
     if (vis.selectBreed != null) {
-      vis.filtereddata = vis.data.filter(d => d.breed == vis.selectBreed.breed);
+      vis.filteredData = vis.data.filter(
+        (d) => d.breed == vis.selectBreed.breed
+      );
     }
 
     if (vis.selectAge != null) {
-      vis.filtereddata = vis.data.filter(d => d.age_group == vis.selectAge.age); 
+      vis.filteredData = vis.data.filter(
+        (d) => d.age_group == vis.selectAge.age
+      );
     }
 
     // Group data by intake type and intake condition
     const groupedData = d3.rollups(
-      vis.filtereddata,
+      vis.filteredData,
       (v) => v.length,
       (d) => d.intake_type,
       (d) => d.intake_condition
     );
 
     // Calculate the counts for each intake type
-    const intakeTypeCounts = vis.filtereddata.reduce((acc, item) => {
+    const intakeTypeCounts = vis.filteredData.reduce((acc, item) => {
       if (!acc[item.intake_type]) {
         acc[item.intake_type] = 0;
       }
@@ -96,11 +108,11 @@ class HeatMap {
 
     // Sort the intake types based on counts in descending order
     const xDomain = Array.from(
-      new Set(vis.filtereddata.map((d) => d.intake_type))
+      new Set(vis.filteredData.map((d) => d.intake_type))
     ).sort((a, b) => intakeTypeCounts[b] - intakeTypeCounts[a]);
 
     // Calculate the counts for each intake condition
-    const intakeConditionCounts = vis.filtereddata.reduce((acc, item) => {
+    const intakeConditionCounts = vis.filteredData.reduce((acc, item) => {
       if (!acc[item.intake_condition]) {
         acc[item.intake_condition] = 0;
       }
@@ -110,7 +122,7 @@ class HeatMap {
 
     // Sort the intake conditions based on counts in descending order
     const yDomain = Array.from(
-      new Set(vis.filtereddata.map((d) => d.intake_condition))
+      new Set(vis.filteredData.map((d) => d.intake_condition))
     ).sort((a, b) => intakeConditionCounts[b] - intakeConditionCounts[a]);
 
     // Update scales and domains based on the sorted intake types and conditions
@@ -149,89 +161,148 @@ class HeatMap {
       .sort((b, a) => b.count - a.count)
       .map((data, index) => ({ ...data, order: index }));
 
-    const groupSize = Math.ceil(orderedData.length / vis.config.colors.length);
+    vis.groupSizes = vis.calculateGroupSizes(
+      orderedData.length,
+      vis.config.colors.length
+    );
 
-    // Create a color scale with 5 ordinal groups based on the order property of the mergedData array
-    vis.colorScale = d3
-      .scaleOrdinal()
-      .domain(orderedData.map((d) => d.order))
-      .range(
-        d3
-          .range(vis.config.colors.length)
-          .flatMap((i) => d3.range(groupSize).map(() => vis.config.colors[i]))
-      );
+    vis.legendData = vis.generateLegendData(orderedData);
 
     vis.renderVis(orderedData);
+  }
+
+  generateLegendData(orderedData) {
+    let vis = this;
+
+    if (orderedData.length === 0) {
+      // Return an empty array if there is no data
+      return [];
+    }
+
+    const initialLegendData = vis.groupSizes.map((size, i) => {
+      const start = vis.groupSizes.slice(0, i).reduce((a, b) => a + b, 0);
+      const end = start + size - 1;
+
+      // Ensure that the range is not empty
+      if (orderedData[start] && orderedData[end]) {
+        return {
+          color: vis.config.colors[i],
+          range: [orderedData[start].count, orderedData[end].count],
+        };
+      }
+      return null;
+    });
+
+    // Filter out any null values and then merge overlapping ranges
+    const filteredLegendData = initialLegendData.filter(
+      (item) => item !== null
+    );
+    const mergedLegendData = filteredLegendData.reduce((acc, item) => {
+      if (acc.length === 0 || item.range[0] > acc[acc.length - 1].range[1]) {
+        acc.push(item);
+      } else {
+        acc[acc.length - 1].range[1] = item.range[1];
+      }
+      return acc;
+    }, []);
+
+    return mergedLegendData;
+  }
+
+  calculateGroupSizes(length, numGroups) {
+    const baseSize = Math.floor(length / numGroups);
+    const remainder = length % numGroups;
+    const sizes = [];
+
+    for (let i = 0; i < numGroups; i++) {
+      sizes.push(i < numGroups - remainder ? baseSize : baseSize + 1);
+    }
+    return sizes;
   }
 
   renderVis(orderedData) {
     let vis = this;
 
+    // Create a custom color scale function that takes the count as input and returns the corresponding color
+    vis.colorScale = (count) => {
+      for (const legendItem of vis.legendData) {
+        if (count >= legendItem.range[0] && count <= legendItem.range[1]) {
+          return legendItem.color;
+        }
+      }
+    };
+
     vis.chart
-      .selectAll("rect")
+      .selectAll(".cell")
       .data(orderedData)
-      .join("rect")
-      .attr("x", (d) => vis.xScale(d.intakeType))
-      .attr("y", (d) => vis.yScale(d.intakeCondition))
-      .attr("width", vis.xScale.bandwidth())
-      .attr("height", vis.yScale.bandwidth())
-      .attr("fill", (d) => vis.colorScale(d.order))
-      .on("mouseover", (event, d) => {
-        d3.select(event.currentTarget).classed("rect-hover", true);
-        d3.select("#tooltip")
-          .style("display", "block")
-          .style("left", event.pageX + 20 + "px")
-          .style("top", event.pageY + "px")
-          .html(`Count: ${d.count}`);
-      })
-      .on("mouseleave", (event) => {
-        d3.select(event.currentTarget).classed("rect-hover", false);
-        d3.select("#tooltip").style("display", "none");
-      });
+      .join(
+        (enter) =>
+          enter
+            .append("rect")
+            .attr("class", "cell")
+            .attr("x", (d) => vis.xScale(d.intakeType))
+            .attr("y", (d) => vis.yScale(d.intakeCondition))
+            .attr("width", vis.xScale.bandwidth())
+            .attr("height", vis.yScale.bandwidth())
+            .attr("fill", (d) => vis.colorScale(d.count))
+            .on("mouseover", (event, d) => {
+              d3.select(event.currentTarget).classed("rect-hover", true);
+              d3.select("#tooltip")
+                .style("display", "block")
+                .style("left", event.pageX + 20 + "px")
+                .style("top", event.pageY + "px")
+                .html(`Count: ${d.count}`);
+            })
+            .on("mouseleave", (event) => {
+              d3.select(event.currentTarget).classed("rect-hover", false);
+              d3.select("#tooltip").style("display", "none");
+            }),
+        (update) =>
+          update
+            .attr("x", (d) => vis.xScale(d.intakeType))
+            .attr("y", (d) => vis.yScale(d.intakeCondition))
+            .attr("width", vis.xScale.bandwidth())
+            .attr("height", vis.yScale.bandwidth())
+            .attr("fill", (d) => vis.colorScale(d.count)),
+        (exit) => exit.remove()
+      );
 
     vis.xAxisG.call(vis.xAxis);
     vis.yAxisG.call(vis.yAxis);
 
-    // Create the legend
-    const legend = vis.chart
-      .append("g")
-      .attr("class", "legend")
-      .attr("transform", `translate(${vis.width}, 0)`);
-
-    const groupSize = Math.ceil(orderedData.length / vis.config.colors.length);
-    const legendData = d3
-      .range(vis.config.colors.length)
-      .reverse()
-      .map((i) => ({
-        color: vis.config.colors[i],
-        range: [
-          orderedData.find((obj) => obj.order === i * groupSize).count,
-          orderedData.find((obj) => obj.order === (i + 1) * groupSize - 1)
-            .count,
-        ],
-      }));
-
-    const legendItemHeight = 20;
-
-    const legendItems = legend
+    vis.legendItems = vis.legend
       .selectAll(".legend-item")
-      .data(legendData)
-      .enter()
-      .append("g")
-      .attr("class", "legend-item")
-      .attr("transform", (d, i) => `translate(0, ${i * legendItemHeight})`);
+      .data(vis.legendData)
+      .join(
+        (enter) =>
+          enter
+            .append("g")
+            .attr("class", "legend-item")
+            .attr(
+              "transform",
+              (d, i) => `translate(0, ${i * vis.legendItemHeight})`
+            ),
+        (update) => update,
+        (exit) => exit.remove()
+      );
 
-    legendItems
-      .append("rect")
+    vis.legendItems
+      .selectAll("rect")
+      .data((d) => [d])
+      .join("rect")
       .attr("width", 15)
       .attr("height", 15)
       .style("fill", (d) => d.color);
 
-    legendItems
-      .append("text")
+    vis.legendItems
+      .selectAll("text")
+      .data((d) => [d])
+      .join("text")
       .attr("x", 20)
       .attr("y", 12)
-      .text((d) => `${d.range[0]} - ${d.range[1]}`)
+      .text((d) =>
+        d.range[0] === d.range[1] ? d.range[0] : `${d.range[0]} - ${d.range[1]}`
+      )
       .style("font-size", "12px");
   }
 }
