@@ -150,9 +150,6 @@ class Line {
             });
         }
 
-        // console.log(vis.filtereddata2[0].datetime)
-        // console.log(tmpTimeFormat2(vis.filtereddata2[0].datetime))
-
         // get intake data group by date
         let groupByDate = d3.group(vis.filtereddata, g => {
             return g.datetime.substring(0, 7);
