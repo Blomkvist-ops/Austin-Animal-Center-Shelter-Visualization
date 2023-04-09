@@ -134,15 +134,18 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       barChart.selectBreed = undefined;
       heatMap.selectBreed = undefined;
 
-      if (selectType != []) {
+      console.log(selectType);
+
+      if (selectType.length != 0) {
         barChart.data = data.filter((d) => {
-          return selectedType.includes(d.animal_type);
+          return selectType.includes(d.animal_type);
         });
         heatMap.data = data.filter((d) => {
-          return selectedType.includes(d.animal_type);
+          return selectType.includes(d.animal_type);
         });
       }
       else {
+        console.log('here');
         barChart.data = data;
         heatMap.data = data;
       }
@@ -169,9 +172,6 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       //   lines.selectAge = null;
       //   lines.selectType = null;
       //   lines.selectCondition = null;
-
-      console.log(selectAge);
-      console.log(selectBreed.breed);
     }
     barChart.updateVis();
     heatMap.updateVis();
@@ -184,12 +184,12 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       bubble.selectAge = undefined;
       heatMap.selectAge = undefined;
 
-      if (selectType != []) {
+      if (selectType.length != 0) {
         bubble.data = data.filter((d) => {
-          return selectedType.includes(d.animal_type);
+          return selectType.includes(d.animal_type);
         });
         heatMap.data = data.filter((d) => {
-          return selectedType.includes(d.animal_type);
+          return selectType.includes(d.animal_type);
         });
       }
       else {
