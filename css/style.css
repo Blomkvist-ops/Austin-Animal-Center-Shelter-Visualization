@@ -39,6 +39,7 @@ body {
 
 .path-hover {
   stroke-width: 6;
+  r: 7;
 }
 
 line {
@@ -122,10 +123,10 @@ line {
   font-family: "Noto Sans JP", sans-serif;
   font-size: 12px;
 }
-/*fill: #F9F3B9;*/
+
 .point {
-  opacity: 1;
-  fill: black;
+  opacity: 0.5;
+  fill: #f9f3b9;
   cursor: pointer;
 }
 
