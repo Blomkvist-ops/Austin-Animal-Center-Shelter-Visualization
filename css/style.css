@@ -122,10 +122,10 @@ line {
   font-family: "Noto Sans JP", sans-serif;
   font-size: 12px;
 }
-
+/*fill: #F9F3B9;*/
 .point {
   opacity: 0.5;
-  fill: #F9F3B9;
+  fill: red;
   cursor: pointer;
 }
 

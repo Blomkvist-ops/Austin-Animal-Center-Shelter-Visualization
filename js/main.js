@@ -2,7 +2,7 @@ const parseTime = d3.timeParse("%m-%d");
 
 let selectBreed;
 let selectAge;
-let selectTime;
+let selectTime = [0,0];
 let dispatcher = d3.dispatch('filterBreed', 'filterAge', 'filterTime');
 
 
@@ -10,11 +10,11 @@ let dispatcher = d3.dispatch('filterBreed', 'filterAge', 'filterTime');
 // create line chart
 d3.csv("data/aac_intakes.csv").then((data) => {
   d3.csv("data/aac_outcomes.csv").then((data2) => {
-    let timeline = new timeLine({ parentElement: "#timeline" }, data, data2,
-        selectBreed, selectAge, dispatcher);
-    timeline.updateVis();
+    // let timeline = new timeLine({ parentElement: "#timeline" }, data, data2,
+    //     selectBreed, selectAge, dispatcher);
+    // timeline.updateVis();
 
-    let lines = new Line({ parentElement: "#line-chart" }, data, data2, selectBreed, selectAge, selectTime, dispatcher);
+    let lines = new Line({ parentElement: "#line-chart" }, data, data2, selectBreed, selectAge, dispatcher);
     lines.updateVis();
     dispatcher.on('filterTime', time => {
       if (time == null) {

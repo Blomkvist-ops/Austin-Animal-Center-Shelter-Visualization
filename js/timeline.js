@@ -62,6 +62,7 @@ class timeLine {
             .attr('width', vis.config.containerWidth)
             .attr('height', vis.config.containerHeight);
 
+
         // SVG Group containing the actual chart; D3 margin convention
         vis.chart = vis.svg.append('g')
             .attr('transform', `translate(${vis.config.margin.left},${vis.config.margin.top})`);
@@ -91,13 +92,8 @@ class timeLine {
         //     .attr('dy', '.71em')
         //     .text('Net');
 
-        vis.brushG = vis.chart.append('g')
-            .attr('class', 'brush x-brush');
 
 
-        // Initialize brush component
-
-        let selection = [0,0]
         vis.brush = d3.brushX()
             .extent([[0, 0], [vis.width, vis.height]])
             .on('brush', function({selection}) {
@@ -190,7 +186,8 @@ class timeLine {
         vis.xScale.domain([new Date('2013-10-01'), new Date('2018-05-01')]);
         vis.yScaleR.domain([-600, 600]);
 
-
+        let idleTimeout
+        function idled() { idleTimeout = null; }
         vis.renderVis();
     }
 
