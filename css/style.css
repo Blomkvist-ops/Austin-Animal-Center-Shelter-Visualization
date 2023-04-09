@@ -125,7 +125,7 @@ line {
 }
 
 .point {
-  opacity: 0.5;
+  opacity: 1;
   fill: #f9f3b9;
   cursor: pointer;
 }
