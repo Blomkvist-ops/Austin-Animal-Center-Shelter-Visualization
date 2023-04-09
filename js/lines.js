@@ -103,8 +103,6 @@ class Line {
             //     }
             // })
             .on('end', function({selection}) {
-                console.log("sss")
-
                 if (selection) {
                     if (selection[0] != selection[1]) {
                         vis.selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
