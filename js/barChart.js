@@ -92,10 +92,10 @@ class BarChart {
     vis.svg
       .append("text")
       .attr("class", "axis-title right")
-      .attr("x", vis.width - 40)
+      .attr("x", vis.width - 70)
       .attr("y", 0)
       .attr("dy", "12")
-      .text("Time in Shelter (Days)");
+      .text("Average Time in Shelter (Days)");
 
     // Create the legend
     vis.legend = vis.chart
@@ -126,15 +126,16 @@ class BarChart {
   calculateAgeCounts() {
     let vis = this;
 
-    let ageCounts = {};
+    let ageCounts = {
+      Baby: { age: "Baby", total: 0, count: 0, totalAge: 0 },
+      Young: { age: "Young", total: 0, count: 0, totalAge: 0 },
+      Mature: { age: "Mature", total: 0, count: 0, totalAge: 0 },
+      Elder: { age: "Elder", total: 0, count: 0, totalAge: 0 },
+    };
 
     vis.filtereddata.forEach((d) => {
       const age = vis.getAgeGroup(d.age_upon_outcome); // Use helper function to determine age group
       const timeInShelter = d.time_in_shelter;
-
-      if (!ageCounts[age]) {
-        ageCounts[age] = { age, total: 0, count: 0, totalAge: 0 };
-      }
 
       ageCounts[age].total += timeInShelter;
       ageCounts[age].count += 1;
@@ -163,13 +164,17 @@ class BarChart {
     const ageCounts = vis.calculateAgeCounts();
 
     ageCounts.forEach((d) => {
-      d.average = d.total / d.count;
-      d.ageAvg = d.totalAge / d.count;
+      d.average = d.count === 0 ? null : d.total / d.count;
+      d.ageAvg = d.count === 0 ? null : d.totalAge / d.count;
     });
+
+    const maxCount = d3.max(ageCounts, vis.yValue);
+    vis.yAxis.tickFormat(maxCount < 4 ? d3.format(".2f") : d3.format("d"));
 
     vis.xScale.domain(["Baby", "Young", "Mature", "Elder"]);
     vis.yScale.domain([0, d3.max(ageCounts, vis.yValue)]);
     vis.yScaleR.domain([0, d3.max(ageCounts, vis.yValueR) + 10]);
+
     vis.renderVis(ageCounts);
   }
 
@@ -215,19 +220,21 @@ class BarChart {
         // toggle the selection
         d3.select(this).classed("active", !isActive);
 
-        const selectedGender = vis.chart.selectAll(".bar.active").data();
+        const selectedAge = vis.chart.selectAll(".bar.active").data();
 
-        if (selectedGender[0] != null) {
-          vis.dispatcher.call("filterAge", v, selectedGender[0]);
+        if (selectedAge[0] != null) {
+          vis.dispatcher.call("filterAge", v, selectedAge[0]);
         } else {
-          vis.dispatcher.call("filterBreed", v, null);
+          vis.dispatcher.call("filterAge", v, null);
         }
       });
 
     // line view
     vis.chart
       .selectAll("path")
-      .data([ageCounts])
+      .data([
+        ageCounts.filter((d) => d.average !== null && d.average !== undefined),
+      ]) // Filter out data points with null or undefined average values
       .join(
         (enter) =>
           enter
@@ -243,6 +250,7 @@ class BarChart {
         "d",
         d3
           .line()
+          .defined((d) => d.average !== null && d.average !== undefined) // Add this line to only draw the line segments for defined data points
           .x(function (d) {
             return vis.xScale(d.age) + vis.xScale.bandwidth() / 2;
           })
@@ -250,6 +258,36 @@ class BarChart {
             return vis.yScaleR(d.average);
           })
       )
+      .on("mouseover", (event, d) => {
+        d3.select(event.currentTarget).classed("path-hover", true);
+        d3.selectAll(".y-axis.right .tick text").style("font-weight", "bold");
+        d3.select(".axis-title.right").style("font-weight", "bold");
+      })
+      .on("mouseleave", (event, d) => {
+        d3.select(event.currentTarget).classed("path-hover", false);
+        d3.selectAll(".y-axis.right .tick text").style("font-weight", "normal");
+        d3.select(".axis-title.right").style("font-weight", "normal");
+      });
+
+    const filteredPoints = ageCounts.filter(
+      (d) => d.average !== null && d.average !== undefined
+    );
+
+    vis.chart
+      .selectAll(".circle-point")
+      .data(filteredPoints.length === 1 ? filteredPoints : [])
+      .join(
+        (enter) =>
+          enter
+            .append("circle")
+            .attr("class", "circle-point")
+            .attr("r", 5)
+            .style("fill", "#2f1313"),
+        (update) => update,
+        (exit) => exit.remove()
+      )
+      .attr("cx", (d) => vis.xScale(d.age) + vis.xScale.bandwidth() / 2)
+      .attr("cy", (d) => vis.yScaleR(d.average))
       .on("mouseover", (event, d) => {
         d3.select(event.currentTarget).classed("path-hover", true);
         d3.selectAll(".y-axis.right .tick text").style("font-weight", "bold");

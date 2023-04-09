@@ -39,6 +39,7 @@ body {
 
 .path-hover {
   stroke-width: 6;
+  r: 7;
 }
 
 line {
@@ -125,7 +126,7 @@ line {
 
 .point {
   opacity: 0.5;
-  fill: #F9F3B9;
+  fill: #f9f3b9;
   cursor: pointer;
 }
 

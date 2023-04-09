@@ -87,6 +87,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
 
   dispatcher.on("filterBreed", (breed) => {
     if (breed == null) {
+      selectBreed = null;
       barChart.data = data;
       barChart.selectBreed = undefined;
 
@@ -101,6 +102,24 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       barChart.selectBreed = breed;
       heatMap.selectBreed = breed;
       //lines.selectBreed = breed;
+
+      selectAge = null;
+      //   selectType = null;
+      //   selectCondition = null;
+      //   selectTime = null;
+
+      // unselect all the filters
+      heatMap.selectAge = null;
+      //   heatMap.selectTime = null;
+      //   barChart.selectType = null;
+      //   barChart.selectCondition = null;
+      //   barChart.selectTime = null;
+      //   lines.selectAge = null;
+      //   lines.selectType = null;
+      //   lines.selectCondition = null;
+
+      console.log(selectAge);
+      console.log(selectBreed.breed);
     }
     barChart.updateVis();
     heatMap.updateVis();
@@ -109,6 +128,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
 
   dispatcher.on("filterAge", (age) => {
     if (age == null) {
+      selectAge = null;
       bubble.data = data;
       barChart.selectAge = undefined;
 
@@ -119,10 +139,28 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       // lines.data2 = data;
       // lines.selectBreed = undefined;
     } else {
-      selectBreed = age;
+      selectAge = age;
       bubble.selectAge = age;
       heatMap.selectAge = age;
       //lines.selectBreed = breed;
+
+      selectBreed = null;
+      //   selectType = null;
+      //   selectCondition = null;
+      //   selectTime = null;
+
+      // unselect all the filters
+      heatMap.selectBreed = null;
+      //   heatMap.selectTime = null;
+      //   bubble.selectType = null;
+      //   bubble.selectCondition = null;
+      //   bubble.selectTime = null;
+      //   lines.selectBreed = null;
+      //   lines.selectType = null;
+      //   lines.selectCondition = null;
+
+      console.log(selectAge.age);
+      console.log(selectBreed);
     }
     bubble.updateVis();
     heatMap.updateVis();
