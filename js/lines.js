@@ -4,7 +4,7 @@ class Line {
      * @param {Object}
      * @param {Array}
      */
-    constructor(_config, _data, _data2) {
+    constructor(_config, _data, _data2, _selectBreed, _selectAge, _selectTime, _dispatcher) {
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: 1300,
@@ -15,6 +15,10 @@ class Line {
         }
         this.data = _data;
         this.data2 = _data2;
+        this.selectBreed = _selectBreed;
+        this.selectAge = _selectAge;
+        this.selectTime = _selectTime;
+        this.dispatcher = _dispatcher;
         this.initVis();
     }
     initVis() {
@@ -39,6 +43,7 @@ class Line {
         vis.xScale = d3.scaleTime()
             .range([0, vis.width]);
 
+
         vis.yScale = d3.scaleLinear()
             .range([vis.height, 0]);
 
@@ -47,10 +52,11 @@ class Line {
 
         // Initialize axes
         vis.xAxis = d3.axisBottom(vis.xScale)
-            .ticks(10)
+            .ticks(12)
             .tickFormat(d => {
                 return formatDate(new Date(d))
             });
+
 
         vis.yAxis = d3.axisLeft(vis.yScale)
             .tickPadding(10);
@@ -58,6 +64,7 @@ class Line {
         vis.yAxisR = d3.axisRight(vis.yScaleR)
             .tickPadding(10)
             .tickFormat(d3.format("d"));
+
 
         // Define size of SVG drawing area
         vis.svg = d3.select(vis.config.parentElement)
@@ -81,8 +88,9 @@ class Line {
             .attr('class', 'axis y-axis')
             .attr("transform", "translate(" + vis.width + " ,+15)");
 
+
         // Append both axis titles
-        vis.svg.append('text')
+        vis.chart.append('text')
             .attr('class', 'axis-title')
             .attr('y', 5)
             .attr('x', vis.width + 150)
@@ -90,9 +98,9 @@ class Line {
             .style('text-anchor', 'end')
             .text('Net Number');
 
-        vis.svg.append('text')
+        vis.chart.append('text')
             .attr('class', 'axis-title')
-            .attr('x', 10)
+            .attr('x', 0)
             .attr('y', 5)
             .attr('dy', '.71em')
             .text('Number of Intake/outcome');
@@ -102,8 +110,51 @@ class Line {
     updateVis() {
         let vis = this;
 
+        selectTime = [new Date("2013-05-01"), new Date("2018-10-01")]
+
+        vis.filtereddata = vis.data;
+        vis.filtereddata2 = vis.data2;
+        if (vis.selectBreed != null) {
+            vis.filtereddata = vis.data.filter(d => d.breed == vis.selectBreed.breed);
+            vis.filtereddata2 = vis.filtereddata2.filter(d => d.breed == vis.selectBreed.breed);
+
+        }
+
+        if (vis.selectAge != null) {
+            vis.filtereddata = vis.filtereddata.filter(d => d.age_group == vis.selectAge.age);
+            vis.filtereddata2 = vis.filtereddata2.filter(d => d.age_group == vis.selectAge.age);
+        }
+
+        const tmpTimeFormat = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L");
+        const tmpTimeFormat2 = d3.timeParse("%Y-%m-%dT%H:%M:%S");
+
+        const getMinDate = function(d1, d2) {
+            if (d1 > d2) return d2
+            else return d1
+        }
+        const getMaxDate = function (d1, d2) {
+            if (d1 < d2) return d2
+            else return d1
+        }
+
+        if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
+            let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1])
+            let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1])
+            vis.filtereddata = vis.filtereddata.filter(d => {
+                let currDate = tmpTimeFormat(d.datetime)
+                return currDate >= minDate && currDate <= maxDate
+            });
+            vis.filtereddata2 = vis.filtereddata2.filter(d =>{
+                let currDate = tmpTimeFormat2(d.datetime)
+                return currDate >= minDate && currDate <= maxDate
+            });
+        }
+
+        // console.log(vis.filtereddata2[0].datetime)
+        // console.log(tmpTimeFormat2(vis.filtereddata2[0].datetime))
+
         // get intake data group by date
-        let groupByDate = d3.group(this.data, g => {
+        let groupByDate = d3.group(vis.filtereddata, g => {
             return g.datetime.substring(0, 7);
         });
 
@@ -113,7 +164,7 @@ class Line {
         })
 
         // get outcome data group by date
-        let groupByDate2 = d3.group(this.data2, g => {
+        let groupByDate2 = d3.group(this.filtereddata2, g => {
             return g.datetime.substring(0, 7);
         });
 
@@ -131,15 +182,15 @@ class Line {
                     cnt++;
                 }
                 let num = e[1] - cnt;
-                groupByDate3.set(e[0], num)
+                groupByDate3.set(e[0], [num, e[1], cnt])
             } else {
-                groupByDate3.set(e[0], e[1])
+                groupByDate3.set(e[0], [e[1], e[1], 0])
             }
         })
 
         vis.outcomeArr.forEach(e => {
             if (groupByDate3.get(e[0]) == null) {
-                groupByDate3.set(e[0], -e[1])
+                groupByDate3.set(e[0], [-e[1], 0 , e[1]])
             }
         })
 
@@ -149,8 +200,8 @@ class Line {
         vis.netArr = Array.from(groupByDate3.entries());
         let groupData = [];
         vis.netArr.forEach(e => {
-            let intakeNum = groupByDate.get(e[0]) != null ? groupByDate.get(e[0]).length : 0
-            let outcomeNum = groupByDate2.get(e[0]) != null ? groupByDate2.get(e[0]).length : 0
+            let intakeNum = e[1][1]
+            let outcomeNum = e[1][2]
             groupData.push({
                 "key": e[0],
                 "values":[{"year": e[0], "name": "outcome", "val": outcomeNum},
@@ -164,6 +215,8 @@ class Line {
         })
 
         vis.sortedNet.sort(function(a,b){return a.year-b.year})
+
+
 
         vis.intakeArr.sort(function(a, b){
             return parseTime(a[0]) - parseTime(b[0])}
@@ -186,7 +239,15 @@ class Line {
         })
 
 
-        vis.xScale.domain([new Date('2013-05-01'), new Date('2017-12-01')]);
+        // console.log(vis.sortedNet)
+
+        if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
+            let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1])
+            let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1])
+            vis.xScale.domain([minDate, maxDate]);
+        } else {
+            vis.xScale.domain([new Date('2013-10-01'), new Date('2018-05-01')]);
+        }
         vis.yScale.domain([0, 4800]);
         vis.yScaleR.domain([-1500, 1500]);
 
@@ -198,12 +259,14 @@ class Line {
         let vis = this;
         const parseTime = d3.timeParse("%Y-%m")
 
-
-        vis.stakcedline = vis.svg
+        vis.stakcedline = vis.chart
             .selectAll(".lines")
             .data(vis.stackedData)
-            .enter()
-            .append("path")
+            .join(
+                (enter) => enter.append("path").attr("class", "stackedline"),
+                (update) => update,
+                (exit) => exit.remove()
+            )
             .style("fill", function(d) { name = vis.keys[d.key] ;  return vis.colorScale(name); })
             .attr("d", d3.area()
                 .x(function(d, i) {
@@ -216,7 +279,7 @@ class Line {
             )
 
         //Add net line
-        const lines = vis.svg.append("path")
+        let line = vis.chart.append("path")
             .datum(vis.sortedNet)
             .attr("fill", "none")
             .attr("stroke", "black")
@@ -224,25 +287,47 @@ class Line {
             .attr("d", d3.line()
                 .x(function(d) {
                     return vis.xScale(d.year) })
-                .y(function(d) { return vis.yScaleR(d.value) })
+                .y(function(d) { return vis.yScaleR(d.value[0]) })
             )
 
 
-        const circles = vis.svg.selectAll('.point')
+        let circles = vis.chart.selectAll('.point')
             .data(vis.sortedNet)
             .join('circle')
             .attr('class', 'point')
             .attr('r', 4)
-            .attr('cy', d => vis.yScaleR(d.value))
+            .attr('cy', d => vis.yScaleR(d.value[0]))
             .attr('cx', d => vis.xScale(d.year))
+
+        // add tooltips
+        circles.on("mouseover", (event, d) => {
+            d3.select("#tooltip")
+                .style("display", "block")
+                .style("left", (event.pageX + vis.config.tooltipPadding) + "px")
+                .style("top", (event.pageY + vis.config.tooltipPadding) + "px")
+                .html(`
+					<div class="tooltip-title">Time: ${formatDate(d.year)}</div>
+					<div>
+						<i>Type: General</i>
+					</div>
+					<ul>
+						<li>Intake Num: ${d.value[1]}</li>
+						<li>Outcome Num: ${d.value[2]}</li>
+						<li>Net Num: ${d.value[0]}</li>
+					</ul>
+				`);
+        })
+            .on("mouseleave", () => {
+                d3.select("#tooltip").style("display", "none");
+            });
 
         // add legend
         let size = 20
-        vis.svg.selectAll("myarea")
+        vis.chart.selectAll("myarea")
             .data(vis.mygroup)
             .enter()
             .append("rect")
-            .attr("x", vis.width - 50)
+            .attr("x", vis.width - 150)
             .attr("y", function(d,i){ return 10 + i*(size+5)}) // 100 is where the first dot appears. 25 is the distance between dots
             .attr("width", size)
             .attr("height", size)
@@ -250,11 +335,11 @@ class Line {
                 name = vis.keys[d] ;  return vis.colorScale(name);})
 
         // Add name for each legend
-        vis.svg.selectAll("mylabels")
+        vis.chart.selectAll("mylabels")
             .data(vis.mygroup)
             .enter()
             .append("text")
-            .attr("x", vis.width - size * 1.2)
+            .attr("x", vis.width - size * 1.2 - 100)
             .attr("y", function(d,i){ return 10 + i*(size+5) + (size / 2) + 5})
             .text(function(d){
                 if (d == 0) {
@@ -264,19 +349,21 @@ class Line {
                 }})
 
         // Add label for net line
-        vis.svg.append("text")
-            .attr("transform", "translate(" + (vis.width + 50) + "," +
-                (vis.yScaleR(vis.sortedNet[vis.sortedNet.length - 1].value) + 15) + ")")
-            .attr("class", "net-label")
-            .attr("dy", ".35em")
-            .attr("text-anchor", "start")
-            .style("fill", "black")
-            .text("Net");
+        // vis.chart.append("text")
+        //     .attr("transform", "translate(" + (vis.width - 50) + "," +
+        //         (vis.yScaleR(vis.sortedNet[vis.sortedNet.length - 1].value[0]) + 15) + ")")
+        //     .attr("class", "net-label")
+        //     .attr("dy", ".35em")
+        //     .attr("text-anchor", "start")
+        //     .style("fill", "black")
+        //     .text("Net");
+
+        vis.stakcedline.exit().remove()
 
 
         vis.xAxisG
             .call(vis.xAxis)
-            .call(g => g.select('.domain').remove());
+            .call(g => g.select('.lines').remove());
 
         vis.yAxisG
             .call(vis.yAxis)
@@ -285,20 +372,18 @@ class Line {
         vis.yAxisGR
             .call(vis.yAxisR)
             .call(g => g.select('.domain').remove())
-
     }
-
-
 }
 
 function formatDate(date) {
-  let d = new Date(date),
-    month = "" + (d.getMonth() + 1),
-    day = "" + d.getDate(),
-    year = d.getFullYear();
+    let d = new Date(date),
+        month = "" + (d.getMonth() + 1),
+        day = "" + d.getDate(),
+        year = d.getFullYear();
 
-  if (month.length < 2) month = "0" + month;
-  if (day.length < 2) day = "0" + day;
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + day;
 
-  return [year, month].join("-");
+    return [year, month].join("-");
 }
+
