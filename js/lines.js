@@ -107,11 +107,11 @@ class Line {
                     if (selection[0] != selection[1]) {
                         vis.selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
                         vis.selectTime = selection.map(vis.xScale.invert, vis.xScale);
-                        // vis.dispatcher.call("filterTime", this, vis.selectedDomain);
+                        vis.dispatcher.call("filterTime", this, vis.selectedDomain);
                         vis.updateVis();
                     }
                 }
-                // if (!selection) vis.dispatcher.call("filterTime",this, null);
+                if (!selection) vis.dispatcher.call("filterTime",this, null);
 
             });
 
@@ -368,36 +368,6 @@ class Line {
         //         return vis.xScale(d.year) })
         //     .y(function(d) { return vis.yScaleR(d.value[0]) })
         // )
-
-
-            let circles = vis.chart.selectAll('.point')
-                .data(vis.sortedNet)
-                .join('circle')
-                .attr('class', 'point')
-                .attr('r', 4)
-                .attr('cy', d => vis.yScaleR(d.value[0]))
-                .attr('cx', d => vis.xScale(d.year))
-            // add tooltips
-            circles.on("mouseover", (event, d) => {
-                d3.select("#tooltip")
-                    .style("display", "block")
-                    .style("left", (event.pageX + vis.config.tooltipPadding) + "px")
-                    .style("top", (event.pageY + vis.config.tooltipPadding) + "px")
-                    .html(`
-                        <div class="tooltip-title">Time: ${formatDate(d.year)}</div>
-                        <div>
-                            <i>Type: General</i>
-                        </div>
-                        <ul>
-                            <li>Intake Num: ${d.value[1]}</li>
-                            <li>Outcome Num: ${d.value[2]}</li>
-                            <li>Net Num: ${d.value[0]}</li>
-                        </ul>
-                    `);
-            })
-                .on("mouseleave", () => {
-                    d3.select("#tooltip").style("display", "none");
-                });
 
 
         // add legend

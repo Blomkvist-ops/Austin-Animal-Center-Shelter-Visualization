@@ -4,7 +4,7 @@ class timeLine {
      * @param {Object}
      * @param {Array}
      */
-    constructor(_config, _data, _data2, _selectBreed, _selectAge, _dispatcher) {
+    constructor(_config, _data, _data2, _selectBreed, _selectAge, _selectTime, _dispatcher) {
         this.config = {
             parentElement: _config.parentElement,
             containerWidth: 1300,
@@ -17,6 +17,7 @@ class timeLine {
         this.selectBreed = _selectBreed;
         this.selectAge = _selectAge;
         this.dispatcher = _dispatcher;
+        this.selectTime = _selectTime;
         this.initVis();
     }
 
@@ -83,7 +84,7 @@ class timeLine {
             .attr('x', vis.width / 2)
             .attr('dy', '.71em')
             .style('text-anchor', 'end')
-            .text('Timeline Filter ');
+            .text('Net Flow of Animals');
 
         // vis.chart.append('text')
         //     .attr('class', 'axis-title')
@@ -94,21 +95,21 @@ class timeLine {
 
 
 
-        vis.brush = d3.brushX()
-            .extent([[0, 0], [vis.width, vis.height]])
-            .on('brush', function({selection}) {
-                if (selection) {
-                    if (selection[0] != selection[1]) {
+        // vis.brush = d3.brushX()
+        //     .extent([[0, 0], [vis.width, vis.height]])
+        //     .on('brush', function({selection}) {
+        //         if (selection) {
+        //             if (selection[0] != selection[1]) {
 
-                        vis.selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
-                        vis.dispatcher.call("filterTime", this, vis.selectedDomain);
-                    }
-                }
-                //vis.brushed(selection);
-            })
-            .on('end', function({selection}) {
-                if (!selection) vis.dispatcher.call("filterTime",this, null);
-            });
+        //                 vis.selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
+        //                 vis.dispatcher.call("filterTime", this, vis.selectedDomain);
+        //             }
+        //         }
+        //         //vis.brushed(selection);
+        //     })
+        //     .on('end', function({selection}) {
+        //         if (!selection) vis.dispatcher.call("filterTime",this, null);
+        //     });
 
 
         vis.updateVis()
@@ -157,7 +158,7 @@ class timeLine {
 
         vis.outcomeArr.forEach(e => {
             if (groupByDate3.get(e[0]) == null) {
-                groupByDate3.set(e[0], [-e[1], 0 , e[1]])
+                groupByDate3.set(e[0], [-e[1], 0, e[1]])
             }
         })
 
@@ -171,19 +172,36 @@ class timeLine {
             let outcomeNum = e[1][2]
             groupData.push({
                 "key": e[0],
-                "values":[{"year": e[0], "name": "outcome", "val": outcomeNum},
-                    {"year": e[0], "name": "intake", "val": intakeNum}]
+                "values": [{ "year": e[0], "name": "outcome", "val": outcomeNum },
+                { "year": e[0], "name": "intake", "val": intakeNum }]
             })
         })
 
         vis.sortedNet = []
         vis.netArr.forEach(e => {
-            vis.sortedNet.push({"year":parseTime(e[0]), "value": e[1]})
+            vis.sortedNet.push({ "year": parseTime(e[0]), "value": e[1] })
         })
 
-        vis.sortedNet.sort(function(a,b){return a.year-b.year})
+        vis.sortedNet.sort(function (a, b) { return a.year - b.year })
 
-        vis.xScale.domain([new Date('2013-10-01'), new Date('2018-05-01')]);
+        const getMinDate = function (d1, d2) {
+            if (d1 > d2) return d2
+            else return d1
+        }
+        const getMaxDate = function (d1, d2) {
+            if (d1 < d2) return d2
+            else return d1
+        }
+
+        if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
+            let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1])
+            let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1])
+            vis.xScale.domain([minDate, maxDate]);
+        } else {
+            vis.xScale.domain([new Date('2013-10-01'), new Date('2018-05-01')]);
+        }
+
+        //vis.xScale.domain([new Date('2013-10-01'), new Date('2018-05-01')]);
         vis.yScaleR.domain([-600, 600]);
 
         let idleTimeout
@@ -197,16 +215,54 @@ class timeLine {
         const parseTime = d3.timeParse("%Y-%m")
 
         //Add net line
-        vis.netline = vis.chart.append("path")
-            .datum(vis.sortedNet)
-            .attr("fill", "none")
-            .attr("stroke", "black")
-            .attr("stroke-width", 1)
-            .attr("d", d3.line()
-                .x(function(d) {
-                    return vis.xScale(d.year) })
-                .y(function(d) { return vis.yScaleR(d.value[0]) })
-            )
+        vis.netline = vis.chart.selectAll("path")
+            .data([
+                vis.sortedNet
+            ])
+            .join(
+                (enter) =>
+                    enter
+                        .append("path")
+                        .attr("fill", "none")
+                        .attr("stroke", "black")
+                        .attr("stroke-width", 1),
+                (update) => update,
+                (exit) => exit.remove()
+            ).attr("d", d3.line()
+                .x(function (d) {
+                    return vis.xScale(d.year)
+                })
+                .y(function (d) { return vis.yScaleR(d.value[0]) })
+            );
+
+        let circles = vis.chart.selectAll('.point')
+            .data(vis.sortedNet)
+            .join('circle')
+            .attr('class', 'point')
+            .attr('r', 4)
+            .attr('cy', d => vis.yScaleR(d.value[0]))
+            .attr('cx', d => vis.xScale(d.year))
+        // add tooltips
+        circles.on("mouseover", (event, d) => {
+            d3.select("#tooltip")
+                .style("display", "block")
+                .style("left", (event.pageX + vis.config.tooltipPadding) + "px")
+                .style("top", (event.pageY + vis.config.tooltipPadding) + "px")
+                .html(`
+                    <div class="tooltip-title">Time: ${formatDate(d.year)}</div>
+                    <div>
+                        <i>Type: General</i>
+                    </div>
+                    <ul>
+                        <li>Intake Num: ${d.value[1]}</li>
+                        <li>Outcome Num: ${d.value[2]}</li>
+                        <li>Net Num: ${d.value[0]}</li>
+                    </ul>
+                `);
+        })
+            .on("mouseleave", () => {
+                d3.select("#tooltip").style("display", "none");
+            });
 
         // Add label for net line
         vis.chart.append("text")
@@ -227,11 +283,11 @@ class timeLine {
             .call(vis.yAxisR)
             .call(g => g.select('.domain').remove())
 
-        const defaultBrushSelection = [0,0];
+        // const defaultBrushSelection = [0,0];
 
-        vis.brushG
-            .call(vis.brush)
-            .call(vis.brush.move, defaultBrushSelection);
+        // vis.brushG
+        //     .call(vis.brush)
+        //     .call(vis.brush.move, defaultBrushSelection);
 
     }
 

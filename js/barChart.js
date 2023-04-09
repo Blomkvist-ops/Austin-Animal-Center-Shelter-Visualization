@@ -217,6 +217,7 @@ class BarChart {
         const isActive = d3.select(this).classed("active");
         // limit 1 selection
         d3.selectAll(".bar.active").classed("active", false);
+        d3.selectAll(".bubble.active").classed("active", false);
         // toggle the selection
         d3.select(this).classed("active", !isActive);
 

@@ -126,7 +126,13 @@ line {
 
 .point {
   opacity: 1;
-  fill: #f9f3b9;
+  fill: #AE6427;
+  cursor: pointer;
+}
+
+.point-hover {
+  opacity: 1;
+  fill: #b8a936;
   cursor: pointer;
 }
 

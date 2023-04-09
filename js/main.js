@@ -4,30 +4,30 @@ let selectBreed;
 let selectAge;
 let selectTime = [0,0];
 let dispatcher = d3.dispatch('filterBreed', 'filterAge', 'filterTime');
-
+let selectType = [];
 
 
 // create line chart
 d3.csv("data/aac_intakes.csv").then((data) => {
   d3.csv("data/aac_outcomes.csv").then((data2) => {
-    // let timeline = new timeLine({ parentElement: "#timeline" }, data, data2,
-    //     selectBreed, selectAge, dispatcher);
-    // timeline.updateVis();
+    let timeline = new timeLine({ parentElement: "#timeline" }, data, data2,
+        selectBreed, selectAge, selectTime, dispatcher);
+    timeline.updateVis();
 
     let lines = new Line({ parentElement: "#line-chart" }, data, data2, selectBreed, selectAge, dispatcher);
     lines.updateVis();
     dispatcher.on('filterTime', time => {
       if (time == null) {
-        lines.data = data;
-        lines.data2 = data2;
-        lines.selectTime = undefined;
+        timeline.data = data;
+        timeline.data2 = data2;
+        timeline.selectTime = undefined;
       }
       else {
-        // console.log(time)
+        console.log(time)
         selectTime = time;
-        lines.selectTime = time;
+        timeline.selectTime = time;
       }
-      lines.updateVis();
+      timeline.updateVis();
     });
 
 
@@ -93,6 +93,8 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       selected.push(d3.select(this).attr("data-category"));
     });
 
+    selectedType = selected;
+
     bubble.data = data.filter((d) => {
       return selected.includes(d.animal_type);
     });
@@ -110,6 +112,15 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       bubble.data = data;
       barChart.data = data;
       heatMap.data = data;
+    }     
+    else {
+      if (selectBreed != null) {
+        if (!selected.includes(selectBreed.type)) {
+          selectBreed = null;
+          barChart.selectBreed = null;
+          heatMap.selectBreed = null;
+        }
+      }
     }
 
     bubble.updateVis();
@@ -120,12 +131,21 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
   dispatcher.on("filterBreed", (breed) => {
     if (breed == null) {
       selectBreed = null;
-      barChart.data = data;
       barChart.selectBreed = undefined;
-
-      heatMap.data = data;
       heatMap.selectBreed = undefined;
 
+      if (selectType != []) {
+        barChart.data = data.filter((d) => {
+          return selectedType.includes(d.animal_type);
+        });
+        heatMap.data = data.filter((d) => {
+          return selectedType.includes(d.animal_type);
+        });
+      }
+      else {
+        barChart.data = data;
+        heatMap.data = data;
+      }
       // lines.data = data;
       // lines.data2 = data;
       // lines.selectBreed = undefined;
@@ -161,11 +181,21 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
   dispatcher.on("filterAge", (age) => {
     if (age == null) {
       selectAge = null;
-      bubble.data = data;
-      barChart.selectAge = undefined;
-
-      heatMap.data = data;
+      bubble.selectAge = undefined;
       heatMap.selectAge = undefined;
+
+      if (selectType != []) {
+        bubble.data = data.filter((d) => {
+          return selectedType.includes(d.animal_type);
+        });
+        heatMap.data = data.filter((d) => {
+          return selectedType.includes(d.animal_type);
+        });
+      }
+      else {
+        bubble.data = data;
+        heatMap.data = data;
+      }
 
       // lines.data = data;
       // lines.data2 = data;
@@ -190,9 +220,6 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       //   lines.selectBreed = null;
       //   lines.selectType = null;
       //   lines.selectCondition = null;
-
-      console.log(selectAge.age);
-      console.log(selectBreed);
     }
     bubble.updateVis();
     heatMap.updateVis();
