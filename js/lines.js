@@ -51,10 +51,10 @@ class Line {
 
         // Initialize axes
         vis.xAxis = d3.axisBottom(vis.xScale)
-            // .ticks(12)
-            // .tickFormat(d => {
-            //     return formatDate(new Date(d))
-            // });
+        // .ticks(12)
+        // .tickFormat(d => {
+        //     return formatDate(new Date(d))
+        // });
 
         vis.yAxis = d3.axisLeft(vis.yScale)
             .tickPadding(10);
@@ -151,9 +151,10 @@ class Line {
             .attr('dy', '.71em')
             .text('Number of Intake/outcome');
 
-        vis.updateVis();
+       //  vis.updateVis();
 
     }
+
 
     updateVis() {
         let vis = this;
@@ -174,8 +175,8 @@ class Line {
         //     vis.filtereddata2 = vis.filtereddata2.filter(d => d.age_group == vis.selectAge.age);
         // }
 
-        const tmpTimeFormat = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L");
-        const tmpTimeFormat2 = d3.timeParse("%Y-%m-%dT%H:%M:%S");
+        // const tmpTimeFormat = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L");
+        // const tmpTimeFormat2 = d3.timeParse("%Y-%m-%dT%H:%M:%S");
 
         const getMinDate = function (d1, d2) {
             if (d1 > d2) return d2
@@ -186,18 +187,18 @@ class Line {
             else return d1
         }
 
-        if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
-            let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1])
-            let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1])
-            // vis.filtereddata = vis.filtereddata.filter(d => {
-            //     let currDate = tmpTimeFormat(d.datetime)
-            //     return currDate >= minDate && currDate <= maxDate
-            // });
-            // vis.filtereddata2 = vis.filtereddata2.filter(d => {
-            //     let currDate = tmpTimeFormat2(d.datetime)
-            //     return currDate >= minDate && currDate <= maxDate
-            // });
-        }
+        // if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
+        //     let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1])
+        //     let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1])
+        //     vis.filtereddata = vis.filtereddata.filter(d => {
+        //         let currDate = tmpTimeFormat(d.datetime)
+        //         return currDate >= minDate && currDate <= maxDate
+        //     });
+        //     vis.filtereddata2 = vis.filtereddata2.filter(d => {
+        //         let currDate = tmpTimeFormat2(d.datetime)
+        //         return currDate >= minDate && currDate <= maxDate
+        //     });
+        // }
 
         // get intake data group by date
         let groupByDate = d3.group(vis.filtereddata, g => {
@@ -241,17 +242,20 @@ class Line {
         })
 
 
-        // const parseTime = d3.timeParse("%Y-%m-%d")
+        //const parseTime = d3.timeParse("%Y-%m-%d")
         const parseTime = d3.timeParse("%Y-%m")
         vis.netArr = Array.from(groupByDate3.entries());
         let groupData = [];
         vis.netArr.forEach(e => {
+            let netNum = e[1][0]
             let intakeNum = e[1][1]
             let outcomeNum = e[1][2]
             groupData.push({
                 "key": e[0],
-                "values": [{ "year": e[0], "name": "outcome", "val": outcomeNum },
-                { "year": e[0], "name": "intake", "val": intakeNum }]
+                "values": [
+                    { "year": e[0], "name": "outcome", "val": outcomeNum },
+                    { "year": e[0], "name": "intake", "val": intakeNum }
+                ]
             })
         })
 
@@ -265,12 +269,12 @@ class Line {
 
 
         vis.intakeArr.sort(function (a, b) {
-            return parseTime(a[0]) - parseTime(b[0])
-        }
+                return parseTime(a[0]) - parseTime(b[0])
+            }
         )
         vis.outcomeArr.sort(function (a, b) {
-            return parseTime(a[0]) - parseTime(b[0])
-        }
+                return parseTime(a[0]) - parseTime(b[0])
+            }
         )
 
         vis.mygroup = [0, 1]
@@ -304,6 +308,7 @@ class Line {
 
     renderVis() {
         let vis = this;
+
         const parseTime = d3.timeParse("%Y-%m")
         let area = d3.area()
             .x(function (d, i) {
@@ -316,8 +321,6 @@ class Line {
 
         vis.areaChart.selectAll("mylayers")
             .data(vis.stackedData)
-            // .enter()
-            // .append("path")
             .join("path")
             .style("fill", function (d) { name = vis.keys[d.key]; return vis.colorScale(name); })
             .attr("d", area)
@@ -328,15 +331,11 @@ class Line {
             .call(vis.brush);
 
         // Update axis and area position
-
-        vis.xAxisG.transition().duration(1000).call(d3.axisBottom(vis.xScale).ticks(5))
+        vis.xAxisG.transition().duration(1000).call(d3.axisBottom(vis.xScale).ticks(12))
         vis.areaChart
             .selectAll("path")
             .transition().duration(1000)
             .attr("d", area)
-
-
-
 
         // vis.chart
         //     .selectAll("path")
@@ -365,110 +364,70 @@ class Line {
         //     .attr("fill", "none")
         //     .attr("stroke", "black")
         //     .attr("stroke-width", 3)
-
-            // .attr("d", d3.line()
-            //     .x(function(d) {
-            //         return vis.xScale(d.year) })
-            //     .y(function(d) { return vis.yScaleR(d.value[0]) })
-            // )
-
-        // vis.chart
-        //     .selectAll("path")
-        //     .datum(vis.sortedNet)
-        //     .join(
-        //         (enter) =>
-        //             enter.append("path"),
-        //         (update) => update,
-        //         (exit) => exit.remove()
-        //     )
-        //     .attr("d", d3.line()
-        //         .x(function (d) {
-        //             return vis.xScale(d.year)
-        //         })
-        //         .y(function (d) { return vis.yScaleR(d.value[0]) })
-        //     );
-
-        // vis.chart
-        //     .selectAll("path")
-        //     .datum(vis.sortedNet)
-        //     .join(
-        //         (enter) =>
-        //             enter
-        //                 .append("path")
-        //                 .attr("class", "line")
-        //                 .attr("fill", "none")
-        //                 .attr("stroke", "black")
-        //                 .attr("stroke-width", 3),
-        //         (update) => update,
-        //         (exit) => exit.remove()
-        //     )
-        //     .attr("d", d3.line()
-        //         .x(function (d) {
-        //             return vis.xScale(d.year)
-        //         })
-        //         .y(function (d) { return vis.yScaleR(d.value[0]) })
-        //     );
-
-/*
-        let circles = vis.chart.selectAll('.point')
-            .data(vis.sortedNet)
-            .join('circle')
-            .attr('class', 'point')
-            .attr('r', 4)
-            .attr('cy', d => vis.yScaleR(d.value[0]))
-            .attr('cx', d => vis.xScale(d.year))
-
-        // add tooltips
-        circles.on("mouseover", (event, d) => {
-            d3.select("#tooltip")
-                .style("display", "block")
-                .style("left", (event.pageX + vis.config.tooltipPadding) + "px")
-                .style("top", (event.pageY + vis.config.tooltipPadding) + "px")
-                .html(`
-					<div class="tooltip-title">Time: ${formatDate(d.year)}</div>
-					<div>
-						<i>Type: General</i>
-					</div>
-					<ul>
-						<li>Intake Num: ${d.value[1]}</li>
-						<li>Outcome Num: ${d.value[2]}</li>
-						<li>Net Num: ${d.value[0]}</li>
-					</ul>
-				`);
-        })
-            .on("mouseleave", () => {
-                d3.select("#tooltip").style("display", "none");
-            });
+        //
+        // .attr("d", d3.line()
+        //     .x(function(d) {
+        //         return vis.xScale(d.year) })
+        //     .y(function(d) { return vis.yScaleR(d.value[0]) })
+        // )
 
 
-        */
+            let circles = vis.chart.selectAll('.point')
+                .data(vis.sortedNet)
+                .join('circle')
+                .attr('class', 'point')
+                .attr('r', 4)
+                .attr('cy', d => vis.yScaleR(d.value[0]))
+                .attr('cx', d => vis.xScale(d.year))
+            // add tooltips
+            circles.on("mouseover", (event, d) => {
+                d3.select("#tooltip")
+                    .style("display", "block")
+                    .style("left", (event.pageX + vis.config.tooltipPadding) + "px")
+                    .style("top", (event.pageY + vis.config.tooltipPadding) + "px")
+                    .html(`
+                        <div class="tooltip-title">Time: ${formatDate(d.year)}</div>
+                        <div>
+                            <i>Type: General</i>
+                        </div>
+                        <ul>
+                            <li>Intake Num: ${d.value[1]}</li>
+                            <li>Outcome Num: ${d.value[2]}</li>
+                            <li>Net Num: ${d.value[0]}</li>
+                        </ul>
+                    `);
+            })
+                .on("mouseleave", () => {
+                    d3.select("#tooltip").style("display", "none");
+                });
+
 
         // add legend
-        // let size = 20
-        // vis.chart.selectAll("myarea")
-        //     .data(vis.mygroup)
-        //     .join("rect")
-        //     .attr("x", vis.width - 150)
-        //     .attr("y", function (d, i) { return 10 + i * (size + 5) }) // 100 is where the first dot appears. 25 is the distance between dots
-        //     .attr("width", size)
-        //     .attr("height", size)
-        //     .style("fill", function (d) {
-        //         name = vis.keys[d]; return vis.colorScale(name);
-        //     })
+        let size = 20
+        vis.chart.selectAll("myarea")
+            .data(vis.mygroup)
+            .join("rect")
+            .attr("x", vis.width - 150)
+            .attr("y", function (d, i) { return 10 + i * (size + 5) }) // 100 is where the first dot appears. 25 is the distance between dots
+            .attr("width", size)
+            .attr("height", size)
+            .style("fill", function (d) {
+                name = vis.keys[d]; return vis.colorScale(name);
+            })
 
         // Add name for each legend
-        // vis.chart.selectAll("mylabels")
-        //     .data(vis.mygroup)
-        //     .join("text")
-        //     .attr("x", vis.width - size * 1.2 - 100)
-        //     .attr("y", function (d, i) { return 10 + i * (size + 5) + (size / 2) + 5 })
-        //     .text(function (d) {
-        //         if (d == 0) {
-        //             return "Intake"
-        //         } else {
-        //             return "Outcome"
-        //         }
-        //     })
+        vis.chart.selectAll("mylabels")
+            .data(vis.mygroup)
+            .join("text")
+            .attr("x", vis.width - size * 1.2 - 100)
+            .attr("y", function (d, i) { return 10 + i * (size + 5) + (size / 2) + 5 })
+            .text(function (d) {
+                if (d == 0) {
+                    return "Intake"
+                } else {
+                    return "Outcome"
+                }
+            })
 
         // Add label for net line
         // vis.chart.append("text")
@@ -510,26 +469,3 @@ function formatDate(date) {
 
     return [year, month].join("-");
 }
-
-
-function updateChart(event,d) {
-
-    let extent = event.selection
-
-    // If no selection, back to initial coordinate. Otherwise, update X axis domain
-    if(!extent){
-        if (!idleTimeout) return idleTimeout = setTimeout(idled, 350); // This allows to wait a little bit
-        x.domain(d3.extent(data, function(d) { return d.year; }))
-    }else{
-        x.domain([ x.invert(extent[0]), x.invert(extent[1]) ])
-        areaChart.select(".brush").call(brush.move, null) // This remove the grey brush area as soon as the selection has been done
-    }
-
-    // Update axis and area position
-    xAxis.transition().duration(1000).call(d3.axisBottom(x).ticks(5))
-    areaChart
-        .selectAll("path")
-        .transition().duration(1000)
-        .attr("d", area)
-}
-

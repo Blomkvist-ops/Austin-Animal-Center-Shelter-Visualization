@@ -124,8 +124,8 @@ line {
 }
 /*fill: #F9F3B9;*/
 .point {
-  opacity: 0.5;
-  fill: red;
+  opacity: 1;
+  fill: black;
   cursor: pointer;
 }
 
