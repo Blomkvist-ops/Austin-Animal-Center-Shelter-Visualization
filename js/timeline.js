@@ -111,8 +111,8 @@ class timeLine {
         // Add label for net line
         vis.chart.append("text")
             .attr('y', 0)
-            .attr('x', vis.width)
-            .attr("class", "net-label")
+            .attr('x', vis.width+8)
+            .attr("class", "axis-title")
             .attr("dy", ".35em")
             .attr("text-anchor", "start")
             .style("fill", "black")
