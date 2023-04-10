@@ -12,42 +12,6 @@ let dispatcher = d3.dispatch(
 );
 let selectAnimalType = [];
 
-// create line chart
-d3.csv("data/aac_intakes.csv").then((data) => {
-  d3.csv("data/aac_outcomes.csv").then((data2) => {
-    let timeline = new timeLine(
-      { parentElement: "#timeline" },
-      data,
-      data2,
-      selectBreed,
-      selectAge,
-      selectTime,
-      dispatcher
-    );
-    timeline.updateVis();
-
-    let lines = new Line(
-      { parentElement: "#line-chart" },
-      data,
-      data2,
-      selectBreed,
-      selectAge,
-      dispatcher
-    );
-    lines.updateVis();
-    dispatcher.on("filterTime", (time) => {
-      if (time == null) {
-        timeline.data = data;
-        timeline.data2 = data2;
-        timeline.selectTime = undefined;
-      } else {
-        selectTime = time;
-        timeline.selectTime = time;
-      }
-      timeline.updateVis();
-    });
-  });
-});
 
 // load the intakes data
 d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
@@ -71,6 +35,43 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
     const days = parseInt(d.time_in_shelter.split(" ")[0]);
     d.time_in_shelter = days;
   });
+
+
+// create line chart
+  d3.csv("data/aac_intakes.csv").then((data1) => {
+    d3.csv("data/aac_outcomes.csv").then((data2) => {
+      let timeline = new timeLine(
+          { parentElement: "#timeline" },
+          data1,
+          data2,
+          selectBreed,
+          selectAge,
+          selectTime,
+          dispatcher
+      );
+      timeline.updateVis();
+
+      let lines = new Line(
+          { parentElement: "#line-chart" },
+          data1,
+          data2,
+          selectBreed,
+          selectAge,
+          dispatcher
+      );
+      lines.updateVis();
+      dispatcher.on("filterTime", (time) => {
+        if (time == null) {
+          timeline.data = data1;
+          timeline.data2 = data2;
+          timeline.selectTime = undefined;
+        } else {
+          selectTime = time;
+          timeline.selectTime = time;
+        }
+        timeline.updateVis();
+      });
+
 
   // create graphs
   let bubble = new BubbleChart(
@@ -122,11 +123,28 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       return selected.includes(d.animal_type);
     });
 
+    let tmpData1 = data1.filter((d) => {
+      return selected.includes(d.animal_type);
+    })
+
+    let tmpData2 = data2.filter((d) => {
+      return selected.includes(d.animal_type);
+    })
+
+    lines.data = tmpData1;
+    lines.data2 = tmpData2;
+    timeline.data = tmpData1;
+    timeline.data2 = tmpData2;
+
     // All categories are shown when no categories are active
     if (selected.length == 0) {
       bubble.data = data;
       barChart.data = data;
       heatMap.data = data;
+      lines.data = data1;
+      lines.data2 = data2;
+      timeline.data = data1;
+      timeline.data2 = data2;
     } else {
       if (selectBreed != null) {
         if (!selected.includes(selectBreed.type)) {
@@ -137,6 +155,8 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       }
     }
 
+    lines.updateVis();
+    timeline.updateVis();
     bubble.updateVis();
     barChart.updateVis();
     heatMap.updateVis();
@@ -271,5 +291,27 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
     bubble.updateVis();
     barChart.updateVis();
     //lines.updateVis();
+  });
+
+      dispatcher.on('filterTime', time => {
+        if (time == null) {
+          // timeline.data = data1;
+          // timeline.data2 = data2;
+          timeline.selectTime = undefined;
+        }
+        else {
+          // timeline.data = data1;
+          // timeline.data2 = data2;
+          selectTime = time;
+          timeline.selectTime = time;
+        }
+        // lines.updateVis();
+        timeline.updateVis();
+      });
+
+
+    });
+
+
   });
 });
