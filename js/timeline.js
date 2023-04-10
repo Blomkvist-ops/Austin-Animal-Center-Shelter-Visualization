@@ -48,10 +48,6 @@ class timeLine {
 
         // Initialize axes
         vis.xAxis = d3.axisBottom(vis.xScale)
-            .ticks(12)
-            .tickFormat(d => {
-                return formatDate(new Date(d))
-            });
 
         vis.yAxisR = d3.axisRight(vis.yScaleR)
             // .tickPadding(10)
@@ -112,6 +108,16 @@ class timeLine {
         //     });
 
 
+        // Add label for net line
+        vis.chart.append("text")
+            .attr('y', 0)
+            .attr('x', vis.width)
+            .attr("class", "net-label")
+            .attr("dy", ".35em")
+            .attr("text-anchor", "start")
+            .style("fill", "black")
+            .text("Net");
+
         vis.updateVis()
 
     }
@@ -123,7 +129,7 @@ class timeLine {
 
 
         let groupByDate = d3.group(this.data, g => {
-            return g.datetime.substring(0, 7);
+            return g.datetime.substring(0, 10);
         });
 
         vis.intakeArr = Array.from(groupByDate.entries());
@@ -133,7 +139,7 @@ class timeLine {
 
         // get outcome data group by date
         let groupByDate2 = d3.group(this.data2, g => {
-            return g.datetime.substring(0, 7);
+            return g.datetime.substring(0, 10);
         });
 
         vis.outcomeArr = Array.from(groupByDate2.entries());
@@ -163,8 +169,8 @@ class timeLine {
         })
 
 
-        // const parseTime = d3.timeParse("%Y-%m-%d")
-        const parseTime = d3.timeParse("%Y-%m")
+        const parseTime = d3.timeParse("%Y-%m-%d")
+        // const parseTime = d3.timeParse("%Y-%m")
         vis.netArr = Array.from(groupByDate3.entries());
         let groupData = [];
         vis.netArr.forEach(e => {
@@ -202,7 +208,7 @@ class timeLine {
         }
 
         //vis.xScale.domain([new Date('2013-10-01'), new Date('2018-05-01')]);
-        vis.yScaleR.domain([-600, 600]);
+        vis.yScaleR.domain([-170, 170]);
 
         let idleTimeout
         function idled() { idleTimeout = null; }
@@ -212,7 +218,8 @@ class timeLine {
 
     renderVis() {
         let vis = this;
-        const parseTime = d3.timeParse("%Y-%m")
+        const parseTime = d3.timeParse("%Y-%m-%d")
+        // const parseTime = d3.timeParse("%Y-%m")
 
         //Add net line
         vis.netline = vis.chart.selectAll("path")
@@ -239,10 +246,23 @@ class timeLine {
             .data(vis.sortedNet)
             .join('circle')
             .attr('class', 'point')
-            .attr('r', 4)
+            .attr('r', 1)
             .attr('cy', d => vis.yScaleR(d.value[0]))
             .attr('cx', d => vis.xScale(d.year))
         // add tooltips
+
+
+        const formatDate = (date) => {
+            let d = new Date(date),
+            month = "" + (d.getMonth() + 1),
+            day = "" + d.getDate(),
+            year = d.getFullYear();
+
+            if (month.length < 2) month = "0" + month;
+            if (day.length < 2) day = "0" + day;
+            return [year, month, day].join("-");
+        }
+
         circles.on("mouseover", (event, d) => {
             d3.select("#tooltip")
                 .style("display", "block")
@@ -264,16 +284,8 @@ class timeLine {
                 d3.select("#tooltip").style("display", "none");
             });
 
-        // Add label for net line
-        vis.chart.append("text")
-            .attr("transform", "translate(" + (vis.width - 50) + "," +
-                (vis.yScaleR(vis.sortedNet[vis.sortedNet.length - 1].value[0]) + 15) + ")")
-            .attr("class", "net-label")
-            .attr("dy", ".35em")
-            .attr("text-anchor", "start")
-            .style("fill", "black")
-            .text("Net");
 
+        vis.xAxisG.transition().duration(1000).call(d3.axisBottom(vis.xScale).ticks(12))
 
         vis.xAxisG
             .call(vis.xAxis)
@@ -310,20 +322,6 @@ class timeLine {
     // }
 
 
-}
-
-
-
-function formatDate(date) {
-    let d = new Date(date),
-        month = "" + (d.getMonth() + 1),
-        day = "" + d.getDate(),
-        year = d.getFullYear();
-
-    if (month.length < 2) month = "0" + month;
-    if (day.length < 2) day = "0" + day;
-
-    return [year, month].join("-");
 }
 
 
