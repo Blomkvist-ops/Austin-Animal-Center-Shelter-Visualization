@@ -69,9 +69,8 @@ class timeLine {
             .attr('class', 'axis x-axis')
             .attr('transform', `translate(0,${vis.height})`);
 
-        vis.yAxisGR = vis.chart.append('g')
-            .attr('class', 'axis y-axis')
-            .attr("transform", "translate(" + vis.width + " ,+15)");
+        vis.yAxisGR = vis.chart.append("g").attr("class", "axis y-axis left")
+        .attr("transform", "translate(-50, 0)");
 
         // Append both axis titles
         vis.chart.append('text')
@@ -242,6 +241,17 @@ class timeLine {
                 .y(function (d) { return vis.yScaleR(d.value[0]) })
             );
 
+            const formatDate = (date) => {
+                let d = new Date(date),
+                month = "" + (d.getMonth() + 1),
+                day = "" + d.getDate(),
+                year = d.getFullYear();
+    
+                if (month.length < 2) month = "0" + month;
+                if (day.length < 2) day = "0" + day;
+                return [year, month, day].join("-");
+            }
+
         let circles = vis.chart.selectAll('.point')
             .data(vis.sortedNet)
             .join('circle')
@@ -251,17 +261,6 @@ class timeLine {
             .attr('cx', d => vis.xScale(d.year))
         // add tooltips
 
-
-        const formatDate = (date) => {
-            let d = new Date(date),
-            month = "" + (d.getMonth() + 1),
-            day = "" + d.getDate(),
-            year = d.getFullYear();
-
-            if (month.length < 2) month = "0" + month;
-            if (day.length < 2) day = "0" + day;
-            return [year, month, day].join("-");
-        }
 
         circles.on("mouseover", (event, d) => {
             d3.select("#tooltip")
