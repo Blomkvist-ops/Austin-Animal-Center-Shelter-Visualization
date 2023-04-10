@@ -2,42 +2,55 @@ const parseTime = d3.timeParse("%m-%d");
 
 let selectBreed;
 let selectAge;
-let selectTime = [0,0];
-let dispatcher = d3.dispatch('filterBreed', 'filterAge', 'filterTime');
-let selectType = [];
-
+let selectTypeCondition;
+let selectTime = [0, 0];
+let dispatcher = d3.dispatch(
+  "filterBreed",
+  "filterAge",
+  "filterTypeCondition",
+  "filterTime"
+);
+let selectAnimalType = [];
 
 // create line chart
 d3.csv("data/aac_intakes.csv").then((data) => {
   d3.csv("data/aac_outcomes.csv").then((data2) => {
-    let timeline = new timeLine({ parentElement: "#timeline" }, data, data2,
-        selectBreed, selectAge, selectTime, dispatcher);
+    let timeline = new timeLine(
+      { parentElement: "#timeline" },
+      data,
+      data2,
+      selectBreed,
+      selectAge,
+      selectTime,
+      dispatcher
+    );
     timeline.updateVis();
 
-    let lines = new Line({ parentElement: "#line-chart" }, data, data2, selectBreed, selectAge, dispatcher);
+    let lines = new Line(
+      { parentElement: "#line-chart" },
+      data,
+      data2,
+      selectBreed,
+      selectAge,
+      dispatcher
+    );
     lines.updateVis();
-    dispatcher.on('filterTime', time => {
+    dispatcher.on("filterTime", (time) => {
       if (time == null) {
         timeline.data = data;
         timeline.data2 = data2;
         timeline.selectTime = undefined;
-      }
-      else {
-        console.log(time)
+      } else {
         selectTime = time;
         timeline.selectTime = time;
       }
       timeline.updateVis();
     });
-
-
   });
 });
 
-
 // load the intakes data
 d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
-
   data.forEach((d) => {
     // Preprocess age
     if (d.age_upon_outcome.includes("months")) {
@@ -64,12 +77,14 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
     { parentElement: "#bubble-chart" },
     data,
     selectAge,
+    selectTypeCondition,
     dispatcher
   );
   let barChart = new BarChart(
     { parentElement: "#bar-chart" },
     data,
     selectBreed,
+    selectTypeCondition,
     dispatcher
   );
   let heatMap = new HeatMap(
@@ -112,8 +127,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       bubble.data = data;
       barChart.data = data;
       heatMap.data = data;
-    }     
-    else {
+    } else {
       if (selectBreed != null) {
         if (!selected.includes(selectBreed.type)) {
           selectBreed = null;
@@ -134,18 +148,14 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       barChart.selectBreed = undefined;
       heatMap.selectBreed = undefined;
 
-      console.log(selectType);
-
-      if (selectType.length != 0) {
+      if (selectAnimalType.length != 0) {
         barChart.data = data.filter((d) => {
-          return selectType.includes(d.animal_type);
+          return selectAnimalType.includes(d.animal_type);
         });
         heatMap.data = data.filter((d) => {
-          return selectType.includes(d.animal_type);
+          return selectAnimalType.includes(d.animal_type);
         });
-      }
-      else {
-        console.log('here');
+      } else {
         barChart.data = data;
         heatMap.data = data;
       }
@@ -159,19 +169,16 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       //lines.selectBreed = breed;
 
       selectAge = null;
-      //   selectType = null;
-      //   selectCondition = null;
+      selectTypeCondition = null;
       //   selectTime = null;
 
       // unselect all the filters
       heatMap.selectAge = null;
       //   heatMap.selectTime = null;
-      //   barChart.selectType = null;
-      //   barChart.selectCondition = null;
+      barChart.selectTypeCondition = null;
       //   barChart.selectTime = null;
       //   lines.selectAge = null;
-      //   lines.selectType = null;
-      //   lines.selectCondition = null;
+      //   lines.selectTypeCondition = null;
     }
     barChart.updateVis();
     heatMap.updateVis();
@@ -184,48 +191,85 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       bubble.selectAge = undefined;
       heatMap.selectAge = undefined;
 
-      if (selectType.length != 0) {
+      if (selectAnimalType.length != 0) {
         bubble.data = data.filter((d) => {
-          return selectType.includes(d.animal_type);
+          return selectAnimalType.includes(d.animal_type);
         });
         heatMap.data = data.filter((d) => {
-          return selectType.includes(d.animal_type);
+          return selectAnimalType.includes(d.animal_type);
         });
-      }
-      else {
+      } else {
         bubble.data = data;
         heatMap.data = data;
       }
 
       // lines.data = data;
       // lines.data2 = data;
-      // lines.selectBreed = undefined;
+      // lines.selectAge = undefined;
     } else {
       selectAge = age;
       bubble.selectAge = age;
       heatMap.selectAge = age;
-      //lines.selectBreed = breed;
+      //lines.selectAge = age;
 
       selectBreed = null;
-      //   selectType = null;
-      //   selectCondition = null;
+      selectTypeCondition = null;
       //   selectTime = null;
 
       // unselect all the filters
       heatMap.selectBreed = null;
       //   heatMap.selectTime = null;
-      //   bubble.selectType = null;
-      //   bubble.selectCondition = null;
+      bubble.selectTypeCondition = null;
       //   bubble.selectTime = null;
       //   lines.selectBreed = null;
-      //   lines.selectType = null;
-      //   lines.selectCondition = null;
+      //   lines.selectTypeCondition = null;
     }
     bubble.updateVis();
     heatMap.updateVis();
     //lines.updateVis();
   });
+
+  dispatcher.on("filterTypeCondition", (typeCondition) => {
+    if (typeCondition == null) {
+      selectTypeCondition = null;
+      bubble.selectTypeCondition = undefined;
+      barChart.selectTypeCondition = undefined;
+
+      if (selectAnimalType.length != 0) {
+        bubble.data = data.filter((d) => {
+          return selectAnimalType.includes(d.animal_type);
+        });
+        barChart.data = data.filter((d) => {
+          return selectAnimalType.includes(d.animal_type);
+        });
+      } else {
+        bubble.data = data;
+        barChart.data = data;
+      }
+
+      // lines.data = data;
+      // lines.data2 = data;
+      // lines.selectTypeCondition = undefined;
+    } else {
+      selectTypeCondition = typeCondition;
+      bubble.selectTypeCondition = typeCondition;
+      barChart.selectTypeCondition = typeCondition;
+      //lines.selectTypeCondition = typeCondition;
+
+      selectBreed = null;
+      selectAge = null;
+      //   selectTime = null;
+
+      // unselect all the filters
+      barChart.selectBreed = null;
+      barChart.selectTime = null;
+      bubble.selectAge = null;
+      bubble.selectTime = null;
+      //   lines.selectBreed = null;
+      //   lines.selectAge = null;
+    }
+    bubble.updateVis();
+    barChart.updateVis();
+    //lines.updateVis();
+  });
 });
-
-
-
