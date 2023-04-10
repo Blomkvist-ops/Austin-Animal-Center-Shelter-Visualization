@@ -92,6 +92,7 @@ class Line {
                     }
                 }
                 if (!selection) {
+                    vis.selectTime = [0,0]
                     vis.dispatcher.call("filterTime",this, null);
                     vis.updateVis();
                 }
