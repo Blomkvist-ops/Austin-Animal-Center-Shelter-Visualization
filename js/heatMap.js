@@ -256,6 +256,28 @@ class HeatMap {
             .on("mouseleave", (event) => {
               d3.select(event.currentTarget).classed("rect-hover", false);
               d3.select("#tooltip").style("display", "none");
+            })
+            .on("click", function (v, d) {
+              if (d.count > 0) {
+                const isActive = d3.select(this).classed("active");
+                // limit 1 selection
+                d3.selectAll(".cell.active").classed("active", false);
+                // toggle the selection
+                d3.select(this).classed("active", !isActive);
+                const selectedTypeCondition = vis.chart
+                  .selectAll(".cell.active")
+                  .data();
+
+                if (selectedTypeCondition[0] != null) {
+                  vis.dispatcher.call(
+                    "filterTypeCondition",
+                    v,
+                    selectedTypeCondition[0]
+                  );
+                } else {
+                  vis.dispatcher.call("filterTypeCondition", v, null);
+                }
+              }
             }),
         (update) =>
           update
