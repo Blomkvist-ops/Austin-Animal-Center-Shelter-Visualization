@@ -28,6 +28,11 @@ body {
   stroke-width: 3px;
 }
 
+.cell.active {
+  stroke: #000;
+  stroke-width: 2px;
+}
+
 .bar-hover {
   stroke: #000;
   stroke-width: 3px;
@@ -126,7 +131,7 @@ line {
 
 .point {
   opacity: 1;
-  fill: #AE6427;
+  fill: #ae6427;
   cursor: pointer;
 }
 

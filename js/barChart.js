@@ -1,7 +1,7 @@
 // BarChart class definition
 class BarChart {
   // Class constructor with initial configuration
-  constructor(_config, _data, _selectBreed, _dispatcher) {
+  constructor(_config, _data, _selectBreed, _selectTypeCondition, _dispatcher) {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 600,
@@ -11,6 +11,7 @@ class BarChart {
     };
     this.data = _data;
     this.selectBreed = _selectBreed;
+    this.selectTypeCondition = _selectTypeCondition;
     this.dispatcher = _dispatcher;
     this.selectedCategories = [];
     this.initVis();
@@ -161,6 +162,14 @@ class BarChart {
       );
     }
 
+    if (vis.selectTypeCondition != null) {
+      vis.filtereddata = vis.data.filter(
+        (d) =>
+          d.intake_type == vis.selectTypeCondition.intakeType &&
+          d.intake_condition == vis.selectTypeCondition.intakeCondition
+      );
+    }
+
     const ageCounts = vis.calculateAgeCounts();
 
     ageCounts.forEach((d) => {
@@ -217,7 +226,6 @@ class BarChart {
         const isActive = d3.select(this).classed("active");
         // limit 1 selection
         d3.selectAll(".bar.active").classed("active", false);
-        d3.selectAll(".bubble.active").classed("active", false);
         // toggle the selection
         d3.select(this).classed("active", !isActive);
 

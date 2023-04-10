@@ -4,7 +4,7 @@ class BubbleChart {
    * @param {Object}
    * @param {Array}
    */
-  constructor(_config, _data, _selectAge, _dispatcher) {
+  constructor(_config, _data, _selectAge, _selectTypeCondition, _dispatcher) {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 500,
@@ -16,6 +16,7 @@ class BubbleChart {
     this.data = _data;
     this.dispatcher = _dispatcher;
     this.selectAge = _selectAge;
+    this.selectTypeCondition = _selectTypeCondition;
     this.selectedCategories = [];
     this.initVis();
   }
@@ -111,6 +112,14 @@ class BubbleChart {
     if (vis.selectAge != null) {
       vis.filtereddata = vis.data.filter(
         (d) => d.age_group == vis.selectAge.age
+      );
+    }
+
+    if (vis.selectTypeCondition != null) {
+      vis.filtereddata = vis.data.filter(
+        (d) =>
+          d.intake_type == vis.selectTypeCondition.intakeType &&
+          d.intake_condition == vis.selectTypeCondition.intakeCondition
       );
     }
 
