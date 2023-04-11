@@ -208,7 +208,7 @@ class timeLine {
         }
 
         //vis.xScale.domain([new Date('2013-10-01'), new Date('2018-05-01')]);
-        vis.yScaleR.domain([-170, 170]);
+        vis.yScaleR.domain([-170, 150]);
 
         let idleTimeout
         function idled() { idleTimeout = null; }
