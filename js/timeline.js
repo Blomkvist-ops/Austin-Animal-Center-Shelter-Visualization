@@ -40,10 +40,10 @@ class timeLine {
       .attr(
         "transform",
         "translate(" +
-          vis.config.margin.left +
-          "," +
-          vis.config.margin.top +
-          ")"
+        vis.config.margin.left +
+        "," +
+        vis.config.margin.top +
+        ")"
       );
 
     vis.width =
@@ -59,19 +59,21 @@ class timeLine {
 
     vis.xScale = d3.scaleTime().range([0, vis.width]);
 
-    // vis.yScale = d3.scaleLinear()
-    //     .range([vis.height, 0]);
-
     vis.yScaleR = d3.scaleLinear().range([vis.height, 0]);
 
     // Initialize axes
     vis.xAxis = d3.axisBottom(vis.xScale);
 
     vis.yAxisR = d3
-      .axisRight(vis.yScaleR)
-      // .tickPadding(10)
+      .axisLeft(vis.yScaleR)
       .ticks(5)
+      .tickPadding(10)
+      .tickSize(-vis.width - 50)
       .tickFormat(d3.format("d"));
+    
+    vis.size = d3.scaleLinear()
+    .domain([0, 100000000])
+    .range([2.5, 1]);
 
     // Define size of SVG drawing area
     vis.svg = d3
@@ -102,45 +104,24 @@ class timeLine {
     vis.chart
       .append("text")
       .attr("class", "view-title")
-      .attr("y", 0)
-      .attr("x", vis.width / 2 + 50)
+      .attr("y", -10)
+      .attr("x", 160)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
       .text("Net Flow of Animals");
 
-    // vis.chart.append('text')
-    //     .attr('class', 'axis-title')
-    //     .attr('x', 0)
-    //     .attr('y', 5)
-    //     .attr('dy', '.71em')
-    //     .text('Net');
 
-    // vis.brush = d3.brushX()
-    //     .extent([[0, 0], [vis.width, vis.height]])
-    //     .on('brush', function({selection}) {
-    //         if (selection) {
-    //             if (selection[0] != selection[1]) {
+    // Initialize clipping mask that covers the whole chart
+    vis.chart.append('defs')
+      .append('clipPath')
+      .attr('id', 'chart-mask')
+      .append('rect')
+      .attr('width', vis.width)
+      .attr('y', -vis.config.margin.top)
+      .attr('height', vis.config.containerHeight);
 
-    //                 vis.selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
-    //                 vis.dispatcher.call("filterTime", this, vis.selectedDomain);
-    //             }
-    //         }
-    //         //vis.brushed(selection);
-    //     })
-    //     .on('end', function({selection}) {
-    //         if (!selection) vis.dispatcher.call("filterTime",this, null);
-    //     });
-
-    // Add label for net line
-    vis.chart
-      .append("text")
-      .attr("y", 0)
-      .attr("x", vis.width + 8)
-      .attr("class", "axis-title")
-      .attr("dy", ".35em")
-      .attr("text-anchor", "start")
-      .style("fill", "black")
-      .text("Net");
+    vis.chart = vis.chart.append('g')
+      .attr('clip-path', 'url(#chart-mask)');
 
     vis.updateVis();
   }
@@ -224,15 +205,17 @@ class timeLine {
       else return d1;
     };
 
+    vis.r = 1;
+
     if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
       let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1]);
       let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1]);
       vis.xScale.domain([minDate, maxDate]);
+      vis.r = vis.size((minDate-maxDate) / 1000000);
     } else {
       vis.xScale.domain([new Date("2013-10-01"), new Date("2018-05-01")]);
     }
 
-    //vis.xScale.domain([new Date('2013-10-01'), new Date('2018-05-01')]);
     vis.yScaleR.domain([-170, 170]);
 
     let idleTimeout;
@@ -289,11 +272,12 @@ class timeLine {
       .data(vis.sortedNet)
       .join("circle")
       .attr("class", "point")
-      .attr("r", 1)
+      .attr("r", vis.r)
       .attr("cy", (d) => vis.yScaleR(d.value[0]))
       .attr("cx", (d) => vis.xScale(d.year));
-    // add tooltips
 
+
+    // add tooltips
     circles
       .on("mouseover", (event, d) => {
         d3
@@ -325,27 +309,5 @@ class timeLine {
 
     vis.yAxisGR.call(vis.yAxisR).call((g) => g.select(".domain").remove());
 
-    // const defaultBrushSelection = [0,0];
-
-    // vis.brushG
-    //     .call(vis.brush)
-    //     .call(vis.brush.move, defaultBrushSelection);
   }
-
-  // /**
-  //  * React to brush events
-  //  */
-  // brushed(selection) {
-  //     let vis = this;
-  //
-  //     // Check if the brush is still active or if it has been removed
-  //     if (selection) {
-  //         if (selection[0] != selection[1]) {
-  //             vis.selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
-  //             vis.dispatcher.call("filterTime", this, vis.selectedDomain);
-  //         } else {
-  //             vis.dispatcher.call("filterTime",this, null);
-  //         }
-  //     }
-  // }
 }

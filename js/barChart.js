@@ -1,7 +1,7 @@
 // BarChart class definition
 class BarChart {
   // Class constructor with initial configuration
-  constructor(_config, _data, _selectBreed, _selectTypeCondition, _dispatcher) {
+  constructor(_config, _data, _selectBreed, _selectTypeCondition,_selectTime, _dispatcher) {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 650,
@@ -12,6 +12,7 @@ class BarChart {
     this.data = _data;
     this.selectBreed = _selectBreed;
     this.selectTypeCondition = _selectTypeCondition;
+    this.selectTime = _selectTime;
     this.dispatcher = _dispatcher;
     this.selectedCategories = [];
     this.initVis();
@@ -169,6 +170,26 @@ class BarChart {
           d.intake_condition == vis.selectTypeCondition.intakeCondition
       );
     }
+
+    const getMinDate = function (d1, d2) {
+      if (d1 > d2) return d2;
+      else return d1;
+    };
+    const getMaxDate = function (d1, d2) {
+      if (d1 < d2) return d2;
+      else return d1;
+    };
+
+    if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
+      let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1]);
+      let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1]);
+      vis.filtereddata = vis.data.filter(
+        (d) => 
+          (new Date(d.intake_datetime) < maxDate &&
+          new Date(d.intake_datetime) > minDate) || 
+          (new Date(d.outcome_datetime) > minDate && new Date(d.outcome_datetime) < maxDate)
+      );
+    } 
 
     const ageCounts = vis.calculateAgeCounts();
 

@@ -1,5 +1,5 @@
 class HeatMap {
-  constructor(_config, _data, _selectBreed, _selectAge, _dispatcher) {
+  constructor(_config, _data, _selectBreed, _selectAge, _selectTime, _dispatcher) {
     // Initialize HeatMap object with the specified configuration and data
     this.config = {
       parentElement: _config.parentElement,
@@ -11,6 +11,7 @@ class HeatMap {
     this.data = _data;
     this.selectBreed = _selectBreed;
     this.selectAge = _selectAge;
+    this.selectTime = _selectTime;
     this.dispatcher = _dispatcher;
     this.initVis();
   }
@@ -88,6 +89,26 @@ class HeatMap {
         (d) => d.age_group == vis.selectAge.age
       );
     }
+
+    const getMinDate = function (d1, d2) {
+      if (d1 > d2) return d2;
+      else return d1;
+    };
+    const getMaxDate = function (d1, d2) {
+      if (d1 < d2) return d2;
+      else return d1;
+    };
+
+    if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
+      let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1]);
+      let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1]);
+      vis.filteredData = vis.data.filter(
+        (d) => 
+          (new Date(d.intake_datetime) < maxDate &&
+          new Date(d.intake_datetime) > minDate) || 
+          (new Date(d.outcome_datetime) > minDate && new Date(d.outcome_datetime) < maxDate)
+      );
+    } 
 
     // Group data by intake type and intake condition
     const groupedData = d3.rollups(

@@ -130,17 +130,8 @@ class Line {
       .call(vis.xAxis);
 
     // Append y-axis group
-    vis.yAxisG = vis.chart.append("g").attr("class", "axis y-axis");
-
-    // Append both axis titles
-    vis.chart
-      .append("text")
-      .attr("class", "axis-title")
-      .attr("y", 5)
-      .attr("x", vis.width + 50)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Net Number");
+    vis.yAxisG = vis.chart.append("g").attr("class", "axis y-axis")
+    .attr("transform", "translate(-50, 0)");
 
     vis.chart
       .append("text")
@@ -188,22 +179,6 @@ class Line {
 
   updateVis() {
     let vis = this;
-
-    // selectTime = [new Date("2013-05-01"), new Date("2018-10-01")]
-
-    // if (vis.selectBreed != null) {
-    //     vis.filtereddata = vis.data.filter(d => d.breed == vis.selectBreed.breed);
-    //     vis.filtereddata2 = vis.filtereddata2.filter(d => d.breed == vis.selectBreed.breed);
-    //
-    // }
-    //
-    // if (vis.selectAge != null) {
-    //     vis.filtereddata = vis.filtereddata.filter(d => d.age_group == vis.selectAge.age);
-    //     vis.filtereddata2 = vis.filtereddata2.filter(d => d.age_group == vis.selectAge.age);
-    // }
-
-    // const tmpTimeFormat = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L");
-    // const tmpTimeFormat2 = d3.timeParse("%Y-%m-%dT%H:%M:%S");
 
     const getMinDate = function (d1, d2) {
       if (d1 > d2) return d2;
@@ -304,19 +279,6 @@ class Line {
         return parseTime(a.data.key) - parseTime(b.data.key);
       });
     });
-
-    // if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
-    //     let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1])
-    //     let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1])
-    //     vis.filtereddata = vis.filtereddata.filter(d => {
-    //         let currDate = tmpTimeFormat(d.datetime)
-    //         return currDate >= minDate && currDate <= maxDate
-    //     });
-    //     vis.filtereddata2 = vis.filtereddata2.filter(d => {
-    //         let currDate = tmpTimeFormat2(d.datetime)
-    //         return currDate >= minDate && currDate <= maxDate
-    //     });
-    // }
 
     // get intake data group by date
 
