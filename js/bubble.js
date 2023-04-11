@@ -7,8 +7,8 @@ class BubbleChart {
   constructor(_config, _data, _selectAge, _selectTypeCondition, _dispatcher) {
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: 500,
-      containerHeight: 500,
+      containerWidth: 650,
+      containerHeight: 650,
       margin: { top: 15, right: 10, bottom: 10, left: 0 },
       tooltipPadding: 15,
       colors: ["#d92929", "#f0d773", "#ba7f4e", "#8C6239", "#6e4141"],
@@ -55,8 +55,9 @@ class BubbleChart {
       .append("text")
       .attr("class", ".title")
       .attr("x", 0)
-      .attr("y", 50)
+      .attr("y", 62)
       .attr("dy", ".71em")
+      .attr("class", "view-title")
       .text("Breed Distribution");
 
     // Color palette for animal types

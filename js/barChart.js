@@ -4,9 +4,9 @@ class BarChart {
   constructor(_config, _data, _selectBreed, _selectTypeCondition, _dispatcher) {
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: 600,
-      containerHeight: 500,
-      margin: _config.margin || { top: 20, right: 125, bottom: 100, left: 50 },
+      containerWidth: 650,
+      containerHeight: 600,
+      margin: _config.margin || { top: 40, right: 125, bottom: 100, left: 50 },
       colors: ["#8C6239", "#AE6427", "#E5CD6C", "#F9F3B9"],
     };
     this.data = _data;
@@ -85,7 +85,7 @@ class BarChart {
       .append("text")
       .attr("class", "axis-title left")
       .attr("x", 0)
-      .attr("y", 0)
+      .attr("y", 10)
       .attr("dy", "12")
       .text("Count / Age (Years)");
 
@@ -93,8 +93,8 @@ class BarChart {
     vis.svg
       .append("text")
       .attr("class", "axis-title right")
-      .attr("x", vis.width - 70)
-      .attr("y", 0)
+      .attr("x", vis.width - 80)
+      .attr("y", 10)
       .attr("dy", "12")
       .text("Average Time in Shelter (Days)");
 
