@@ -4,8 +4,8 @@ class HeatMap {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 1300,
-      containerHeight: 250,
-      margin: _config.margin || { top: 20, right: 100, bottom: 40, left: 100 },
+      containerHeight: 330,
+      margin: _config.margin || { top: 80, right: 100, bottom: 40, left: 100 },
       colors: ["#F9F3B9", "#E5CD6C", "#AE6427", "#8C6239", "#2F1313"],
     };
     this.data = _data;
@@ -56,9 +56,9 @@ class HeatMap {
 
     vis.svg
       .append("text")
-      .attr("class", "axis-title1 left")
+      .attr("class", "view-title left")
       .attr("x", 0)
-      .attr("y", 0)
+      .attr("y", 50)
       .attr("dy", "12")
       .text("Intake Condition / Intake Type / Count");
 
