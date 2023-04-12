@@ -12,7 +12,6 @@ let dispatcher = d3.dispatch(
 );
 let selectAnimalType = [];
 
-
 // load the intakes data
 d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
   data.forEach((d) => {
@@ -65,7 +64,6 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
   barChart.updateVis();
   heatMap.updateVis();
 
-
   // create line chart
   d3.csv("data/aac_intakes.csv").then((data1) => {
     d3.csv("data/aac_outcomes.csv").then((data2) => {
@@ -89,7 +87,6 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
         dispatcher
       );
       lines.updateVis();
-
 
       dispatcher.on("filterTime", (time) => {
         if (time == null) {
@@ -115,10 +112,12 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
         heatMap.updateVis();
       });
 
-
       d3.selectAll(".legend-btn").on("click", function (event) {
         // toggle status
-        d3.select(this).classed("inactive", !d3.select(this).classed("inactive"));
+        d3.select(this).classed(
+          "inactive",
+          !d3.select(this).classed("inactive")
+        );
 
         let selected = [];
 
@@ -142,11 +141,11 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
 
         let tmpData1 = data1.filter((d) => {
           return selected.includes(d.animal_type);
-        })
+        });
 
         let tmpData2 = data2.filter((d) => {
           return selected.includes(d.animal_type);
-        })
+        });
 
         lines.data = tmpData1;
         lines.data2 = tmpData2;
@@ -228,7 +227,6 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
             bubble.data = data;
             heatMap.data = data;
           }
-
         } else {
           selectAge = age;
           bubble.selectAge = age;
@@ -262,7 +260,6 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
             bubble.data = data;
             barChart.data = data;
           }
-
         } else {
           selectTypeCondition = typeCondition;
           bubble.selectTypeCondition = typeCondition;
@@ -280,9 +277,6 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
         bubble.updateVis();
         barChart.updateVis();
       });
-
     });
-
-
   });
 });

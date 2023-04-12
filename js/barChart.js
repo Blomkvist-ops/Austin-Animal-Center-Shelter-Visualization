@@ -1,7 +1,14 @@
 // BarChart class definition
 class BarChart {
   // Class constructor with initial configuration
-  constructor(_config, _data, _selectBreed, _selectTypeCondition,_selectTime, _dispatcher) {
+  constructor(
+    _config,
+    _data,
+    _selectBreed,
+    _selectTypeCondition,
+    _selectTime,
+    _dispatcher
+  ) {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 650,
@@ -88,13 +95,21 @@ class BarChart {
       .attr("x", 0)
       .attr("y", 10)
       .attr("dy", "12")
-      .text("Count / Age (Years)");
+      .text("Count");
+
+    vis.svg
+      .append("text")
+      .attr("class", "axis-title bottom")
+      .attr("x", 580)
+      .attr("y", 395)
+      .attr("dy", "12")
+      .text("Age");
 
     // Append right y axis title
     vis.svg
       .append("text")
       .attr("class", "axis-title right")
-      .attr("x", vis.width - 100)
+      .attr("x", vis.width - 84)
       .attr("y", 10)
       .attr("dy", "12")
       .text("Average Time in Shelter (Days)");
@@ -103,7 +118,7 @@ class BarChart {
     vis.legend = vis.chart
       .append("g")
       .attr("class", "legend")
-      .attr("transform", `translate(${vis.width}, 0)`);
+      .attr("transform", `translate(${vis.width}, 385)`);
 
     vis.legendItemHeight = 20;
     vis.legendColorScale = d3.scaleOrdinal(vis.config.colors.slice(0, 4));
@@ -184,12 +199,13 @@ class BarChart {
       let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1]);
       let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1]);
       vis.filtereddata = vis.data.filter(
-        (d) => 
+        (d) =>
           (new Date(d.intake_datetime) < maxDate &&
-          new Date(d.intake_datetime) > minDate) || 
-          (new Date(d.outcome_datetime) > minDate && new Date(d.outcome_datetime) < maxDate)
+            new Date(d.intake_datetime) > minDate) ||
+          (new Date(d.outcome_datetime) > minDate &&
+            new Date(d.outcome_datetime) < maxDate)
       );
-    } 
+    }
 
     const ageCounts = vis.calculateAgeCounts();
 

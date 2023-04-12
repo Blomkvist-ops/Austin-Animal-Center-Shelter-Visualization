@@ -1,5 +1,12 @@
 class HeatMap {
-  constructor(_config, _data, _selectBreed, _selectAge, _selectTime, _dispatcher) {
+  constructor(
+    _config,
+    _data,
+    _selectBreed,
+    _selectAge,
+    _selectTime,
+    _dispatcher
+  ) {
     // Initialize HeatMap object with the specified configuration and data
     this.config = {
       parentElement: _config.parentElement,
@@ -59,9 +66,25 @@ class HeatMap {
       .append("text")
       .attr("class", "view-title left")
       .attr("x", 0)
-      .attr("y", 50)
+      .attr("y", 58)
       .attr("dy", "12")
-      .text("Intake Condition / Intake Type / Count");
+      .text("Intake Condition");
+
+    vis.svg
+      .append("text")
+      .attr("class", "view-title right")
+      .attr("x", 1200)
+      .attr("y", 58)
+      .attr("dy", "12")
+      .text("Count");
+
+    vis.svg
+      .append("text")
+      .attr("class", "view-title bottom")
+      .attr("x", 1200)
+      .attr("y", 295)
+      .attr("dy", "12")
+      .text("Intake Type");
 
     // Create the legend
     vis.legend = vis.chart
@@ -103,12 +126,13 @@ class HeatMap {
       let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1]);
       let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1]);
       vis.filteredData = vis.data.filter(
-        (d) => 
+        (d) =>
           (new Date(d.intake_datetime) < maxDate &&
-          new Date(d.intake_datetime) > minDate) || 
-          (new Date(d.outcome_datetime) > minDate && new Date(d.outcome_datetime) < maxDate)
+            new Date(d.intake_datetime) > minDate) ||
+          (new Date(d.outcome_datetime) > minDate &&
+            new Date(d.outcome_datetime) < maxDate)
       );
-    } 
+    }
 
     // Group data by intake type and intake condition
     const groupedData = d3.rollups(

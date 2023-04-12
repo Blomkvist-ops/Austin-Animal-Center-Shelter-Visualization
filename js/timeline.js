@@ -40,10 +40,10 @@ class timeLine {
       .attr(
         "transform",
         "translate(" +
-        vis.config.margin.left +
-        "," +
-        vis.config.margin.top +
-        ")"
+          vis.config.margin.left +
+          "," +
+          vis.config.margin.top +
+          ")"
       );
 
     vis.width =
@@ -70,10 +70,8 @@ class timeLine {
       .tickPadding(10)
       .tickSize(-vis.width - 50)
       .tickFormat(d3.format("d"));
-    
-    vis.size = d3.scaleLinear()
-    .domain([0, 100000000])
-    .range([2.5, 1]);
+
+    vis.size = d3.scaleLinear().domain([0, 100000000]).range([2.5, 1]);
 
     // Define size of SVG drawing area
     vis.svg = d3
@@ -105,23 +103,22 @@ class timeLine {
       .append("text")
       .attr("class", "view-title")
       .attr("y", -10)
-      .attr("x", 160)
+      .attr("x", 170)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
       .text("Net Flow of Animals");
 
-
     // Initialize clipping mask that covers the whole chart
-    vis.chart.append('defs')
-      .append('clipPath')
-      .attr('id', 'chart-mask')
-      .append('rect')
-      .attr('width', vis.width)
-      .attr('y', -vis.config.margin.top)
-      .attr('height', vis.config.containerHeight);
+    vis.chart
+      .append("defs")
+      .append("clipPath")
+      .attr("id", "chart-mask")
+      .append("rect")
+      .attr("width", vis.width)
+      .attr("y", -vis.config.margin.top)
+      .attr("height", vis.config.containerHeight);
 
-    vis.chart = vis.chart.append('g')
-      .attr('clip-path', 'url(#chart-mask)');
+    vis.chart = vis.chart.append("g").attr("clip-path", "url(#chart-mask)");
 
     vis.updateVis();
   }
@@ -211,7 +208,7 @@ class timeLine {
       let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1]);
       let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1]);
       vis.xScale.domain([minDate, maxDate]);
-      vis.r = vis.size((minDate-maxDate) / 1000000);
+      vis.r = vis.size((minDate - maxDate) / 1000000);
     } else {
       vis.xScale.domain([new Date("2013-10-01"), new Date("2018-05-01")]);
     }
@@ -276,7 +273,6 @@ class timeLine {
       .attr("cy", (d) => vis.yScaleR(d.value[0]))
       .attr("cx", (d) => vis.xScale(d.year));
 
-
     // add tooltips
     circles
       .on("mouseover", (event, d) => {
@@ -308,6 +304,5 @@ class timeLine {
     vis.xAxisG.call(vis.xAxis).call((g) => g.select(".domain").remove());
 
     vis.yAxisGR.call(vis.yAxisR).call((g) => g.select(".domain").remove());
-
   }
 }
