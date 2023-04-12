@@ -94,7 +94,7 @@ class BarChart {
     vis.svg
       .append("text")
       .attr("class", "axis-title right")
-      .attr("x", vis.width - 80)
+      .attr("x", vis.width - 100)
       .attr("y", 10)
       .attr("dy", "12")
       .text("Average Time in Shelter (Days)");

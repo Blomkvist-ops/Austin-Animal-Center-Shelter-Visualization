@@ -148,8 +148,8 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
           return selected.includes(d.animal_type);
         })
 
-        // lines.data = tmpData1;
-        // lines.data2 = tmpData2;
+        lines.data = tmpData1;
+        lines.data2 = tmpData2;
         timeline.data = tmpData1;
         timeline.data2 = tmpData2;
 
@@ -158,8 +158,8 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
           bubble.data = data;
           barChart.data = data;
           heatMap.data = data;
-          // lines.data = data1;
-          // lines.data2 = data2;
+          lines.data = data1;
+          lines.data2 = data2;
           timeline.data = data1;
           timeline.data2 = data2;
         } else {
@@ -171,8 +171,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
             }
           }
         }
-
-        // lines.updateVis();
+        lines.updateVis();
         timeline.updateVis();
         bubble.updateVis();
         barChart.updateVis();
@@ -281,18 +280,6 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
         bubble.updateVis();
         barChart.updateVis();
       });
-
-      // dispatcher.on('filterTime', time => {
-      //   if (time == null) {
-      //     timeline.selectTime = undefined;
-      //   }
-      //   else {
-      //     selectTime = time;
-      //     timeline.selectTime = time;
-      //   }
-      //   timeline.updateVis();
-      // });
-
 
     });
 

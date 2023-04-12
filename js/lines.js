@@ -32,10 +32,10 @@ class Line {
       .attr(
         "transform",
         "translate(" +
-          vis.config.margin.left +
-          "," +
-          vis.config.margin.top +
-          ")"
+        vis.config.margin.left +
+        "," +
+        vis.config.margin.top +
+        ")"
       );
 
     vis.width =
@@ -104,6 +104,9 @@ class Line {
       .on("end", function ({ selection }) {
         if (selection) {
           if (selection[0] != 0 && selection[1] != 0) {
+            d3.selectAll(".bubble.active").classed("active", false);
+            d3.selectAll(".bar.active").classed("active", false);
+            d3.selectAll(".cell.active").classed("active", false);
             vis.selectedDomain = selection.map(vis.xScale.invert, vis.xScale);
             vis.selectTime = selection.map(vis.xScale.invert, vis.xScale);
             vis.dispatcher.call("filterTime", this, vis.selectedDomain);
@@ -117,11 +120,6 @@ class Line {
         }
       });
 
-    let idleTimeout;
-    function idled() {
-      idleTimeout = null;
-    }
-
     // Append empty x-axis group and move it to the bottom of the chart
     vis.xAxisG = vis.chart
       .append("g")
@@ -131,7 +129,7 @@ class Line {
 
     // Append y-axis group
     vis.yAxisG = vis.chart.append("g").attr("class", "axis y-axis")
-    .attr("transform", "translate(-50, 0)");
+      .attr("transform", "translate(-50, 0)");
 
     vis.chart
       .append("text")
@@ -141,38 +139,22 @@ class Line {
       .attr("dy", ".71em")
       .text("Number of Intake/outcome");
 
-    let size = 20;
+    vis.size = 20;
     vis.mygroup = [0, 1];
-    vis.chart
-      .selectAll("myarea")
-      .data(vis.mygroup)
-      .join("rect")
-      .attr("x", vis.width - 150)
-      .attr("y", function (d, i) {
-        return 10 + i * (size + 5) - 25;
-      }) // 100 is where the first dot appears. 25 is the distance between dots
-      .attr("width", size)
-      .attr("height", size)
-      .style("fill", function (d) {
-        name = vis.keys[d];
-        return vis.colorScale(name);
-      });
 
-    vis.chart
-      .selectAll("mylabels")
-      .data(vis.mygroup)
-      .join("text")
-      .attr("x", vis.width - size * 1.2 - 100)
-      .attr("y", function (d, i) {
-        return 10 + i * (size + 5) + size / 2 + 5 - 25;
-      })
-      .text(function (d) {
-        if (d == 0) {
-          return "Intake";
-        } else {
-          return "Outcome";
-        }
-      });
+    // Create the legend
+    vis.legend = vis.chart
+      .append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(${vis.width-100}, 0)`);
+
+    vis.legendItemHeight = 20;
+
+    // Update the legendData array with age groups and their colors
+    vis.legendData = [
+      { age: "Intake", color: vis.colorScale(0) },
+      { age: "Outcome", color: vis.colorScale(1) },
+    ];
 
     vis.updateVis();
   }
@@ -202,7 +184,7 @@ class Line {
     });
 
     // get outcome data group by date
-    let groupByDate2 = d3.group(this.filtereddata2, (g) => {
+    let groupByDate2 = d3.group(vis.filtereddata2, (g) => {
       return g.datetime.substring(0, 10);
     });
 
@@ -236,6 +218,10 @@ class Line {
     // const parseTime = d3.timeParse("%Y-%m")
     vis.netArr = Array.from(groupByDate3.entries());
     let groupData = [];
+
+    vis.intakeSum = vis.filtereddata.length;
+    vis.outcomeSum = vis.filtereddata2.length;
+
     vis.netArr.forEach((e) => {
       let netNum = e[1][0];
       let intakeNum = e[1][1];
@@ -248,6 +234,19 @@ class Line {
         ],
       });
     });
+
+    if (vis.selectTime != null && vis.selectTime.length != 0 && vis.selectTime[1] != 0) {
+      vis.newFilter1 = vis.data.filter(
+        (d) =>
+          new Date(d.datetime) < vis.selectTime[1] &&
+          new Date(d.datetime) > vis.selectTime[0]);
+      vis.newFilter2 = vis.data2.filter(
+        (d) =>
+          new Date(d.datetime) < vis.selectTime[1] &&
+          new Date(d.datetime) > vis.selectTime[0]);
+      vis.intakeSum = vis.newFilter1.length;
+      vis.outcomeSum = vis.newFilter2.length;
+    }
 
     vis.sortedNet = [];
     vis.netArr.forEach((e) => {
@@ -299,7 +298,7 @@ class Line {
     let vis = this;
 
     const parseTime = d3.timeParse("%Y-%m-%d");
-    // const parseTime = d3.timeParse("%Y-%m")
+
     let area = d3
       .area()
       .x(function (d, i) {
@@ -311,7 +310,7 @@ class Line {
       .y1(function (d) {
         return vis.yScale(d[1]);
       });
-
+      
     vis.areaChart
       .selectAll("mylayers")
       .data(vis.stackedData)
@@ -336,5 +335,40 @@ class Line {
     vis.xAxisG.call(vis.xAxis).call((g) => g.select(".lines").remove());
 
     vis.yAxisG.call(vis.yAxis).call((g) => g.select(".domain").remove());
+
+    vis.legendItems = vis.legend
+      .selectAll(".legend-item")
+      .data(vis.legendData)
+      .join(
+        (enter) =>
+          enter
+            .append("g")
+            .attr("class", "legend-item")
+            .attr(
+              "transform",
+              (d, i) => `translate(0, ${i * vis.legendItemHeight})`
+            ),
+        (update) => update,
+        (exit) => exit.remove()
+      );
+
+    vis.legendItems
+      .selectAll("rect")
+      .data((d) => [d])
+      .join("rect")
+      .attr("width", 15)
+      .attr("height", 15)
+      .style("fill", (d) => d.color);
+
+    vis.legendItems
+      .selectAll("text")
+      .data((d) => [d])
+      .join("text")
+      .attr("x", 20)
+      .attr("y", 12)
+      .text((d) => `${d.age} : ${d.age == 'Intake'? vis.intakeSum: vis.outcomeSum}`)
+      .style("font-size", "12px");
+
+
   }
 }

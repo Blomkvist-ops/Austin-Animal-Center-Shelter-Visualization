@@ -75,6 +75,22 @@ class BubbleChart {
     // Size scale for countries
     vis.size = d3.scaleLinear().range([15, 90]); // circle will be between 7 and 55 px wide
 
+    // Create the legend
+    vis.legend = vis.chart
+      .append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(0, 70)`);
+
+    vis.legendItemHeight = 20;
+
+    // Update the legendData array with age groups and their colors
+    vis.legendData = [
+      { age: "Cat", color: vis.config.colors[4] },
+      { age: "Dog", color: vis.config.colors[2] },
+      { age: "Bird", color: vis.config.colors[0] },
+      { age: "Others", color: vis.config.colors[1] },
+    ];
+
     // Features of the forces applied to the nodes:
     vis.simulation = d3
       .forceSimulation()
@@ -138,12 +154,12 @@ class BubbleChart {
       let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1]);
       let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1]);
       vis.filtereddata = vis.data.filter(
-        (d) => 
+        (d) =>
           (new Date(d.intake_datetime) < maxDate &&
-          new Date(d.intake_datetime) > minDate) || 
+            new Date(d.intake_datetime) > minDate) ||
           (new Date(d.outcome_datetime) > minDate && new Date(d.outcome_datetime) < maxDate)
       );
-    } 
+    }
 
     // create group of data needed for bubble chart
     vis.group = Array.from(
@@ -292,5 +308,41 @@ class BubbleChart {
         label1.attr("x", (d) => d.x).attr("y", (d) => d.y);
       })
       .restart();
+
+
+    vis.legendItems = vis.legend
+      .selectAll(".legend-item")
+      .data(vis.legendData)
+      .join(
+        (enter) =>
+          enter
+            .append("g")
+            .attr("class", "legend-item")
+            .attr(
+              "transform",
+              (d, i) => `translate(0, ${i * vis.legendItemHeight})`
+            ),
+        (update) => update,
+        (exit) => exit.remove()
+      );
+
+    vis.legendItems
+      .selectAll("rect")
+      .data((d) => [d])
+      .join("rect")
+      .attr("width", 15)
+      .attr("height", 15)
+      .style("fill", (d) => d.color);
+
+    vis.legendItems
+      .selectAll("text")
+      .data((d) => [d])
+      .join("text")
+      .attr("x", 20)
+      .attr("y", 12)
+      .text((d) => `${d.age}`)
+      .style("font-size", "12px");
   }
+
+
 }
