@@ -5,6 +5,13 @@ body {
   background: #f7f7f7;
 }
 
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 #tooltip {
   position: absolute;
   display: none;
@@ -17,6 +24,7 @@ body {
   min-width: 100px;
   color: #333;
 }
+
 .tooltip-title {
   color: #000;
   font-size: 12px;
@@ -146,7 +154,12 @@ line {
   font-size: 20px;
 }
 
-.timeline-title {
+.view-title {
   font-family: "Noto Sans JP", sans-serif;
   font-size: 18px;
+}
+
+.axis-title {
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 13px;
 }

@@ -4,11 +4,18 @@ class BubbleChart {
    * @param {Object}
    * @param {Array}
    */
-  constructor(_config, _data, _selectAge, _selectTypeCondition, _dispatcher) {
+  constructor(
+    _config,
+    _data,
+    _selectAge,
+    _selectTypeCondition,
+    _selectTime,
+    _dispatcher
+  ) {
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: 500,
-      containerHeight: 500,
+      containerWidth: 650,
+      containerHeight: 650,
       margin: { top: 15, right: 10, bottom: 10, left: 0 },
       tooltipPadding: 15,
       colors: ["#d92929", "#f0d773", "#ba7f4e", "#8C6239", "#6e4141"],
@@ -17,6 +24,7 @@ class BubbleChart {
     this.dispatcher = _dispatcher;
     this.selectAge = _selectAge;
     this.selectTypeCondition = _selectTypeCondition;
+    this.selectTime = _selectTime;
     this.selectedCategories = [];
     this.initVis();
   }
@@ -55,8 +63,9 @@ class BubbleChart {
       .append("text")
       .attr("class", ".title")
       .attr("x", 0)
-      .attr("y", 50)
+      .attr("y", 62)
       .attr("dy", ".71em")
+      .attr("class", "view-title")
       .text("Breed Distribution");
 
     // Color palette for animal types
@@ -72,6 +81,22 @@ class BubbleChart {
 
     // Size scale for countries
     vis.size = d3.scaleLinear().range([15, 90]); // circle will be between 7 and 55 px wide
+
+    // Create the legend
+    vis.legend = vis.chart
+      .append("g")
+      .attr("class", "legend")
+      .attr("transform", `translate(0, 70)`);
+
+    vis.legendItemHeight = 20;
+
+    // Update the legendData array with age groups and their colors
+    vis.legendData = [
+      { age: "Cat", color: vis.config.colors[4] },
+      { age: "Dog", color: vis.config.colors[2] },
+      { age: "Bird", color: vis.config.colors[0] },
+      { age: "Others", color: vis.config.colors[1] },
+    ];
 
     // Features of the forces applied to the nodes:
     vis.simulation = d3
@@ -120,6 +145,27 @@ class BubbleChart {
         (d) =>
           d.intake_type == vis.selectTypeCondition.intakeType &&
           d.intake_condition == vis.selectTypeCondition.intakeCondition
+      );
+    }
+
+    const getMinDate = function (d1, d2) {
+      if (d1 > d2) return d2;
+      else return d1;
+    };
+    const getMaxDate = function (d1, d2) {
+      if (d1 < d2) return d2;
+      else return d1;
+    };
+
+    if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
+      let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1]);
+      let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1]);
+      vis.filtereddata = vis.data.filter(
+        (d) =>
+          (new Date(d.intake_datetime) < maxDate &&
+            new Date(d.intake_datetime) > minDate) ||
+          (new Date(d.outcome_datetime) > minDate &&
+            new Date(d.outcome_datetime) < maxDate)
       );
     }
 
@@ -270,5 +316,38 @@ class BubbleChart {
         label1.attr("x", (d) => d.x).attr("y", (d) => d.y);
       })
       .restart();
+
+    vis.legendItems = vis.legend
+      .selectAll(".legend-item")
+      .data(vis.legendData)
+      .join(
+        (enter) =>
+          enter
+            .append("g")
+            .attr("class", "legend-item")
+            .attr(
+              "transform",
+              (d, i) => `translate(0, ${i * vis.legendItemHeight})`
+            ),
+        (update) => update,
+        (exit) => exit.remove()
+      );
+
+    vis.legendItems
+      .selectAll("rect")
+      .data((d) => [d])
+      .join("rect")
+      .attr("width", 15)
+      .attr("height", 15)
+      .style("fill", (d) => d.color);
+
+    vis.legendItems
+      .selectAll("text")
+      .data((d) => [d])
+      .join("text")
+      .attr("x", 20)
+      .attr("y", 12)
+      .text((d) => `${d.age}`)
+      .style("font-size", "12px");
   }
 }

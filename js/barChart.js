@@ -1,17 +1,25 @@
 // BarChart class definition
 class BarChart {
   // Class constructor with initial configuration
-  constructor(_config, _data, _selectBreed, _selectTypeCondition, _dispatcher) {
+  constructor(
+    _config,
+    _data,
+    _selectBreed,
+    _selectTypeCondition,
+    _selectTime,
+    _dispatcher
+  ) {
     this.config = {
       parentElement: _config.parentElement,
-      containerWidth: 600,
-      containerHeight: 500,
-      margin: _config.margin || { top: 20, right: 125, bottom: 100, left: 50 },
+      containerWidth: 650,
+      containerHeight: 600,
+      margin: _config.margin || { top: 40, right: 125, bottom: 100, left: 50 },
       colors: ["#8C6239", "#AE6427", "#E5CD6C", "#F9F3B9"],
     };
     this.data = _data;
     this.selectBreed = _selectBreed;
     this.selectTypeCondition = _selectTypeCondition;
+    this.selectTime = _selectTime;
     this.dispatcher = _dispatcher;
     this.selectedCategories = [];
     this.initVis();
@@ -83,18 +91,26 @@ class BarChart {
 
     vis.svg
       .append("text")
-      .attr("class", "axis-title left")
+      .attr("class", "view-title left")
       .attr("x", 0)
-      .attr("y", 0)
+      .attr("y", 10)
       .attr("dy", "12")
-      .text("Count / Age (Years)");
+      .text("Count");
+
+    vis.svg
+      .append("text")
+      .attr("class", "view-title bottom")
+      .attr("x", 580)
+      .attr("y", 395)
+      .attr("dy", "12")
+      .text("Age");
 
     // Append right y axis title
     vis.svg
       .append("text")
-      .attr("class", "axis-title right")
-      .attr("x", vis.width - 70)
-      .attr("y", 0)
+      .attr("class", "view-title right")
+      .attr("x", vis.width - 84)
+      .attr("y", 10)
       .attr("dy", "12")
       .text("Average Time in Shelter (Days)");
 
@@ -102,7 +118,7 @@ class BarChart {
     vis.legend = vis.chart
       .append("g")
       .attr("class", "legend")
-      .attr("transform", `translate(${vis.width}, 0)`);
+      .attr("transform", `translate(${vis.width}, 385)`);
 
     vis.legendItemHeight = 20;
     vis.legendColorScale = d3.scaleOrdinal(vis.config.colors.slice(0, 4));
@@ -167,6 +183,27 @@ class BarChart {
         (d) =>
           d.intake_type == vis.selectTypeCondition.intakeType &&
           d.intake_condition == vis.selectTypeCondition.intakeCondition
+      );
+    }
+
+    const getMinDate = function (d1, d2) {
+      if (d1 > d2) return d2;
+      else return d1;
+    };
+    const getMaxDate = function (d1, d2) {
+      if (d1 < d2) return d2;
+      else return d1;
+    };
+
+    if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
+      let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1]);
+      let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1]);
+      vis.filtereddata = vis.data.filter(
+        (d) =>
+          (new Date(d.intake_datetime) < maxDate &&
+            new Date(d.intake_datetime) > minDate) ||
+          (new Date(d.outcome_datetime) > minDate &&
+            new Date(d.outcome_datetime) < maxDate)
       );
     }
 

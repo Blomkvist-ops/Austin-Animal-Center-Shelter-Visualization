@@ -1,16 +1,24 @@
 class HeatMap {
-  constructor(_config, _data, _selectBreed, _selectAge, _dispatcher) {
+  constructor(
+    _config,
+    _data,
+    _selectBreed,
+    _selectAge,
+    _selectTime,
+    _dispatcher
+  ) {
     // Initialize HeatMap object with the specified configuration and data
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 1300,
-      containerHeight: 250,
-      margin: _config.margin || { top: 20, right: 100, bottom: 40, left: 100 },
+      containerHeight: 330,
+      margin: _config.margin || { top: 80, right: 100, bottom: 40, left: 100 },
       colors: ["#F9F3B9", "#E5CD6C", "#AE6427", "#8C6239", "#2F1313"],
     };
     this.data = _data;
     this.selectBreed = _selectBreed;
     this.selectAge = _selectAge;
+    this.selectTime = _selectTime;
     this.dispatcher = _dispatcher;
     this.initVis();
   }
@@ -56,11 +64,27 @@ class HeatMap {
 
     vis.svg
       .append("text")
-      .attr("class", "axis-title1 left")
+      .attr("class", "view-title left")
       .attr("x", 0)
-      .attr("y", 0)
+      .attr("y", 58)
       .attr("dy", "12")
-      .text("Intake Condition / Intake Type / Count");
+      .text("Intake Condition");
+
+    vis.svg
+      .append("text")
+      .attr("class", "view-title right")
+      .attr("x", 1200)
+      .attr("y", 58)
+      .attr("dy", "12")
+      .text("Count");
+
+    vis.svg
+      .append("text")
+      .attr("class", "view-title bottom")
+      .attr("x", 1200)
+      .attr("y", 295)
+      .attr("dy", "12")
+      .text("Intake Type");
 
     // Create the legend
     vis.legend = vis.chart
@@ -86,6 +110,27 @@ class HeatMap {
     if (vis.selectAge != null) {
       vis.filteredData = vis.data.filter(
         (d) => d.age_group == vis.selectAge.age
+      );
+    }
+
+    const getMinDate = function (d1, d2) {
+      if (d1 > d2) return d2;
+      else return d1;
+    };
+    const getMaxDate = function (d1, d2) {
+      if (d1 < d2) return d2;
+      else return d1;
+    };
+
+    if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
+      let minDate = getMinDate(vis.selectTime[0], vis.selectTime[1]);
+      let maxDate = getMaxDate(vis.selectTime[0], vis.selectTime[1]);
+      vis.filteredData = vis.data.filter(
+        (d) =>
+          (new Date(d.intake_datetime) < maxDate &&
+            new Date(d.intake_datetime) > minDate) ||
+          (new Date(d.outcome_datetime) > minDate &&
+            new Date(d.outcome_datetime) < maxDate)
       );
     }
 
