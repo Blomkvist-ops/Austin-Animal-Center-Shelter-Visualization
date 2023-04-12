@@ -32,10 +32,10 @@ class Line {
       .attr(
         "transform",
         "translate(" +
-        vis.config.margin.left +
-        "," +
-        vis.config.margin.top +
-        ")"
+          vis.config.margin.left +
+          "," +
+          vis.config.margin.top +
+          ")"
       );
 
     vis.width =
@@ -63,7 +63,10 @@ class Line {
     // Initialize axes
     vis.xAxis = d3.axisBottom(vis.xScale);
 
-    vis.yAxis = d3.axisLeft(vis.yScale).tickPadding(10);
+    vis.yAxis = d3
+      .axisLeft(vis.yScale)
+      .tickPadding(10)
+      .tickFormat((d) => Math.abs(d));
 
     // Define size of SVG drawing area
     vis.svg = d3
@@ -128,7 +131,9 @@ class Line {
       .call(vis.xAxis);
 
     // Append y-axis group
-    vis.yAxisG = vis.chart.append("g").attr("class", "axis y-axis")
+    vis.yAxisG = vis.chart
+      .append("g")
+      .attr("class", "axis y-axis")
       .attr("transform", "translate(-50, 0)");
 
     vis.chart
@@ -137,7 +142,15 @@ class Line {
       .attr("x", 0)
       .attr("y", 5)
       .attr("dy", ".71em")
-      .text("Number of Intake/outcome");
+      .text("Number of Intake");
+
+    vis.chart
+      .append("text")
+      .attr("class", "axis-title")
+      .attr("x", 0)
+      .attr("y", 180)
+      .attr("dy", ".71em")
+      .text("Number of Outcome");
 
     vis.size = 20;
     vis.mygroup = [0, 1];
@@ -146,7 +159,7 @@ class Line {
     vis.legend = vis.chart
       .append("g")
       .attr("class", "legend")
-      .attr("transform", `translate(${vis.width-100}, 0)`);
+      .attr("transform", `translate(${vis.width - 100}, 0)`);
 
     vis.legendItemHeight = 20;
 
@@ -235,15 +248,21 @@ class Line {
       });
     });
 
-    if (vis.selectTime != null && vis.selectTime.length != 0 && vis.selectTime[1] != 0) {
+    if (
+      vis.selectTime != null &&
+      vis.selectTime.length != 0 &&
+      vis.selectTime[1] != 0
+    ) {
       vis.newFilter1 = vis.data.filter(
         (d) =>
           new Date(d.datetime) < vis.selectTime[1] &&
-          new Date(d.datetime) > vis.selectTime[0]);
+          new Date(d.datetime) > vis.selectTime[0]
+      );
       vis.newFilter2 = vis.data2.filter(
         (d) =>
           new Date(d.datetime) < vis.selectTime[1] &&
-          new Date(d.datetime) > vis.selectTime[0]);
+          new Date(d.datetime) > vis.selectTime[0]
+      );
       vis.intakeSum = vis.newFilter1.length;
       vis.outcomeSum = vis.newFilter2.length;
     }
@@ -279,6 +298,15 @@ class Line {
       });
     });
 
+    this.stackedData[0].forEach((e) => {
+      e[2] = 0;
+    });
+
+    this.stackedData[1].forEach((e, i) => {
+      e[0] = e[0] - this.stackedData[0][i][1];
+      e[1] = e[1] - this.stackedData[0][i][1];
+      e[2] = 1;
+    });
     // get intake data group by date
 
     if (vis.selectTime != null && vis.selectTime[0] != vis.selectTime[1]) {
@@ -288,7 +316,7 @@ class Line {
     } else {
       vis.xScale.domain([new Date("2013-10-01"), new Date("2018-05-01")]);
     }
-    vis.yScale.domain([0, 260]);
+    vis.yScale.domain([-160, 160]);
     vis.yScaleR.domain([-1500, 1500]);
 
     vis.renderVis();
@@ -305,12 +333,20 @@ class Line {
         return vis.xScale(parseTime(d.data.key));
       })
       .y0(function (d) {
-        return vis.yScale(d[0]);
+        if (d[2] == 1) {
+          return vis.yScale(d[0]);
+        } else {
+          return vis.yScale(-d[0]);
+        }
       })
       .y1(function (d) {
-        return vis.yScale(d[1]);
+        if (d[2] == 1) {
+          return vis.yScale(d[1]);
+        } else {
+          return vis.yScale(-d[1]);
+        }
       });
-      
+
     vis.areaChart
       .selectAll("mylayers")
       .data(vis.stackedData)
@@ -366,9 +402,10 @@ class Line {
       .join("text")
       .attr("x", 20)
       .attr("y", 12)
-      .text((d) => `${d.age} : ${d.age == 'Intake'? vis.intakeSum: vis.outcomeSum}`)
+      .text(
+        (d) =>
+          `${d.age} : ${d.age == "Intake" ? vis.intakeSum : vis.outcomeSum}`
+      )
       .style("font-size", "12px");
-
-
   }
 }
