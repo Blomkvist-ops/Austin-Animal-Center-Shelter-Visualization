@@ -1,0 +1,165 @@
+body {
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 13px;
+  padding: 30px;
+  background: #f7f7f7;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#tooltip {
+  position: absolute;
+  display: none;
+  background: #fff;
+  box-shadow: 3px 3px 3px 0px rgb(92 92 92 / 0.5);
+  border: 1px solid #ddd;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px;
+  min-width: 100px;
+  color: #333;
+}
+
+.tooltip-title {
+  color: #000;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.bar.active {
+  stroke: #000;
+  stroke-width: 3px;
+}
+
+.cell.active {
+  stroke: #000;
+  stroke-width: 2px;
+}
+
+.bar-hover {
+  stroke: #000;
+  stroke-width: 3px;
+}
+
+.rect-hover {
+  stroke: #000;
+}
+
+.path-hover {
+  stroke-width: 6;
+  r: 7;
+}
+
+line {
+  color: #a4a5c3;
+  opacity: 0.5;
+}
+
+.line {
+  stroke: #2f1313;
+}
+
+.legend {
+  margin: 0 0;
+  list-style: none;
+  padding-right: 400px;
+  /* display: grid; */
+  grid-template-columns: auto auto;
+}
+
+.legend-btn {
+  display: inline-block;
+  margin: 0 20px 0 0;
+  cursor: pointer;
+  transition: all ease-in-out 200ms;
+}
+
+.legend-btn.inactive {
+  opacity: 0.5;
+}
+
+.legend-btn:hover.legend-btn.inactive:hover {
+  opacity: 0.7;
+}
+
+.legend-symbol {
+  width: 12px;
+  height: 12px;
+  margin-right: 10px;
+  display: inline-block;
+}
+
+.circle {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid;
+}
+
+.legend-btn[data-category="Cat"] .legend-symbol {
+  background: #592c2c;
+}
+
+.legend-btn[data-category="Dog"] .legend-symbol {
+  background: #ba7f4e;
+}
+
+.legend-btn[data-category="Bird"] .legend-symbol {
+  background: #d92929;
+}
+
+.legend-btn[data-category="Other"] .legend-symbol {
+  background: #f0d773;
+}
+
+.bubble.active {
+  opacity: 1;
+  stroke: #000;
+  stroke-width: 5px;
+}
+
+.bubble:hover {
+  stroke: #000;
+  stroke-width: 5px;
+}
+
+.axis path {
+  display: none;
+}
+
+.axis text {
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 12px;
+}
+
+.point {
+  opacity: 1;
+  fill: #ae6427;
+  cursor: pointer;
+}
+
+.point-hover {
+  opacity: 1;
+  fill: #b8a936;
+  cursor: pointer;
+}
+
+.net-label {
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 20px;
+}
+
+.view-title {
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 18px;
+}
+
+.axis-title {
+  font-family: "Noto Sans JP", sans-serif;
+  font-size: 13px;
+}
