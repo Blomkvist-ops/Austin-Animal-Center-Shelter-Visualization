@@ -12,29 +12,34 @@
   </head>
 
   <body>
-    <img src="/data/header1.jpeg" width="1300" />
+    <img src="/data/header1.jpeg" width="90%" />
     <h1>Austin Animal Shelter Intake & Outcome</h1>
-
-    <ul class="legend">
-      <li class="legend-btn inactive" data-category="Cat">
-        <span class="legend-symbol circle"></span>Cat
-      </li>
-      <li class="legend-btn inactive" data-category="Dog">
-        <span class="legend-symbol circle"></span>Dog
-      </li>
-      <li class="legend-btn inactive" data-category="Bird">
-        <span class="legend-symbol circle"></span>Bird
-      </li>
-      <li class="legend-btn inactive" data-category="Other">
-        <span class="legend-symbol circle"></span>Other
-      </li>
-    </ul>
+    <div>
+      <ul class="legend">
+        <li class="legend-btn inactive" data-category="Cat">
+          <span class="legend-symbol circle"></span
+          ><span class="view-title">Cat</span>
+        </li>
+        <li class="legend-btn inactive" data-category="Dog">
+          <span class="legend-symbol circle"></span
+          ><span class="view-title">Dog</span>
+        </li>
+        <li class="legend-btn inactive" data-category="Bird">
+          <span class="legend-symbol circle"></span
+          ><span class="view-title">Bird</span>
+        </li>
+        <li class="legend-btn inactive" data-category="Other">
+          <span class="legend-symbol circle"></span
+          ><span class="view-title">Other</span>
+        </li>
+      </ul>
+    </div>
+    <br />
 
     <div>
       <div><svg id="line-chart"></svg></div>
       <br />
       <div><svg id="timeline"></svg></div>
-
       <div><svg id="heat-map"></svg></div>
       <div>
         <span><svg id="bubble-chart"></svg></span

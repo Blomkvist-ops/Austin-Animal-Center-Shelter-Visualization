@@ -8,8 +8,8 @@ class Line {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 1300,
-      containerHeight: 250,
-      margin: { top: 15, right: 60, bottom: 30, left: 100 },
+      containerHeight: 280,
+      margin: { top: 45, right: 60, bottom: 30, left: 100 },
       tooltipPadding: 15,
       colors: ["#F9F3B9", "#E5CD6C", "#ba7f4e", "#8C6239", "#2F1313"],
     };
@@ -136,13 +136,21 @@ class Line {
       .attr("class", "axis y-axis")
       .attr("transform", "translate(-50, 0)");
 
+    vis.svg
+      .append("text")
+      .attr("class", "view-title")
+      .attr("x", 0)
+      .attr("y", 5)
+      .attr("dy", ".71em")
+      .text("Intake & Outcome Timeline");
+
     vis.chart
       .append("text")
       .attr("class", "axis-title")
       .attr("x", 0)
       .attr("y", 5)
       .attr("dy", ".71em")
-      .text("Number of Intake");
+      .text("Intake Number");
 
     vis.chart
       .append("text")
@@ -150,7 +158,7 @@ class Line {
       .attr("x", 0)
       .attr("y", 180)
       .attr("dy", ".71em")
-      .text("Number of Outcome");
+      .text("Outcome Number");
 
     vis.size = 20;
     vis.mygroup = [0, 1];
