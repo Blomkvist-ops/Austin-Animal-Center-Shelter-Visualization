@@ -101,9 +101,9 @@ class timeLine {
     // Append both axis titles
     vis.chart
       .append("text")
-      .attr("class", "view-title")
+      .attr("class", "axis-title")
       .attr("y", -10)
-      .attr("x", 170)
+      .attr("x", 122)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
       .text("Net Flow of Animals");

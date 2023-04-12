@@ -91,7 +91,7 @@ class BarChart {
 
     vis.svg
       .append("text")
-      .attr("class", "axis-title left")
+      .attr("class", "view-title left")
       .attr("x", 0)
       .attr("y", 10)
       .attr("dy", "12")
@@ -99,7 +99,7 @@ class BarChart {
 
     vis.svg
       .append("text")
-      .attr("class", "axis-title bottom")
+      .attr("class", "view-title bottom")
       .attr("x", 580)
       .attr("y", 395)
       .attr("dy", "12")
@@ -108,7 +108,7 @@ class BarChart {
     // Append right y axis title
     vis.svg
       .append("text")
-      .attr("class", "axis-title right")
+      .attr("class", "view-title right")
       .attr("x", vis.width - 84)
       .attr("y", 10)
       .attr("dy", "12")
