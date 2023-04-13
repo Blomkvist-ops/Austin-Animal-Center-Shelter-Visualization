@@ -5,10 +5,10 @@ let selectAge;
 let selectTypeCondition;
 let selectTime = [0, 0];
 let dispatcher = d3.dispatch(
-  "filterBreed",
-  "filterAge",
-  "filterTypeCondition",
-  "filterTime"
+    "filterBreed",
+    "filterAge",
+    "filterTypeCondition",
+    "filterTime"
 );
 let selectAnimalType = [];
 
@@ -37,28 +37,28 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
 
   // create graphs
   let bubble = new BubbleChart(
-    { parentElement: "#bubble-chart" },
-    data,
-    selectAge,
-    selectTypeCondition,
-    selectTime,
-    dispatcher
+      { parentElement: "#bubble-chart" },
+      data,
+      selectAge,
+      selectTypeCondition,
+      selectTime,
+      dispatcher
   );
   let barChart = new BarChart(
-    { parentElement: "#bar-chart" },
-    data,
-    selectBreed,
-    selectTypeCondition,
-    selectTime,
-    dispatcher
+      { parentElement: "#bar-chart" },
+      data,
+      selectBreed,
+      selectTypeCondition,
+      selectTime,
+      dispatcher
   );
   let heatMap = new HeatMap(
-    { parentElement: "#heat-map" },
-    data,
-    selectBreed,
-    selectAge,
-    selectTime,
-    dispatcher
+      { parentElement: "#heat-map" },
+      data,
+      selectBreed,
+      selectAge,
+      selectTime,
+      dispatcher
   );
   bubble.updateVis();
   barChart.updateVis();
@@ -68,36 +68,51 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
   d3.csv("data/aac_intakes.csv").then((data1) => {
     d3.csv("data/aac_outcomes.csv").then((data2) => {
       let timeline = new timeLine(
-        { parentElement: "#timeline" },
-        data1,
-        data2,
-        selectBreed,
-        selectAge,
-        selectTime,
-        dispatcher
+          { parentElement: "#timeline" },
+          data1,
+          data2,
+          selectAnimalType,
+          selectBreed,
+          selectAge,
+          selectTime,
+          dispatcher
       );
       timeline.updateVis();
 
       let lines = new Line(
-        { parentElement: "#line-chart" },
-        data1,
-        data2,
-        selectBreed,
-        selectAge,
-        dispatcher
+          { parentElement: "#line-chart" },
+          data1,
+          data2,
+          selectAnimalType,
+          selectBreed,
+          selectAge,
+          dispatcher
       );
       lines.updateVis();
 
       dispatcher.on("filterTime", (time) => {
         if (time == null) {
+          if (selectAnimalType.length != 0) {
+            barChart.data = data.filter((d) => {
+              return selectAnimalType.includes(d.animal_type);
+            });
+            heatMap.data = data.filter((d) => {
+              return selectAnimalType.includes(d.animal_type);
+            });
+            bubble.data = data.filter((d) => {
+              return selectAnimalType.includes(d.animal_type);
+            });
+          } else {
+            barChart.data = data;
+            heatMap.data = data;
+            bubble.data = data;
+          }
+
           timeline.data = data1;
           timeline.data2 = data2;
           timeline.selectTime = undefined;
-          bubble.data = data;
           bubble.selectTime = undefined;
-          barChart.data = data;
           barChart.selectTime = undefined;
-          heatMap.data = data;
           heatMap.selectTime = undefined;
         } else {
           selectTime = time;
@@ -106,6 +121,22 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
           barChart.selectTime = time;
           heatMap.selectTime = time;
         }
+        // unselect all the filters
+        bubble.selectAge = undefined;
+        bubble.selectTypeCondition = undefined;
+        barChart.selectBreed = null;
+        barChart.selectTypeCondition = null;
+        heatMap.selectBreed = null;
+        heatMap.selectAge = null;
+        selectAge = null;
+        selectBreed = null;
+        selectTypeCondition = null;
+
+        //unselect all hover
+        d3.selectAll(".bar.active").classed("active", false);
+        d3.selectAll(".bubble.active").classed("active", false);
+        d3.selectAll(".cell.active").classed("active", false);
+
         timeline.updateVis();
         bubble.updateVis();
         barChart.updateVis();
@@ -115,8 +146,8 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
       d3.selectAll(".legend-btn").on("click", function (event) {
         // toggle status
         d3.select(this).classed(
-          "inactive",
-          !d3.select(this).classed("inactive")
+            "inactive",
+            !d3.select(this).classed("inactive")
         );
 
         let selected = [];
@@ -125,7 +156,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
           selected.push(d3.select(this).attr("data-category"));
         });
 
-        selectedType = selected;
+        selectAnimalType = selected;
 
         bubble.data = data.filter((d) => {
           return selected.includes(d.animal_type);
@@ -161,7 +192,10 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
           lines.data2 = data2;
           timeline.data = data1;
           timeline.data2 = data2;
+          lines.selectAnimalType = [];
         } else {
+          timeline.selectAnimalType = selected;
+          lines.selectAnimalType = selected;
           if (selectBreed != null) {
             if (!selected.includes(selectBreed.type)) {
               selectBreed = null;
@@ -270,9 +304,7 @@ d3.csv("data/aac_intakes_outcomes.csv").then((data) => {
 
           // unselect all the filters
           barChart.selectBreed = null;
-          barChart.selectTime = null;
           bubble.selectAge = null;
-          bubble.selectTime = null;
         }
         bubble.updateVis();
         barChart.updateVis();

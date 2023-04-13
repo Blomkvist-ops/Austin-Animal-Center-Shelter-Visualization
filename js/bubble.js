@@ -134,20 +134,6 @@ class BubbleChart {
 
     vis.filtereddata = vis.data;
 
-    if (vis.selectAge != null) {
-      vis.filtereddata = vis.data.filter(
-        (d) => d.age_group == vis.selectAge.age
-      );
-    }
-
-    if (vis.selectTypeCondition != null) {
-      vis.filtereddata = vis.data.filter(
-        (d) =>
-          d.intake_type == vis.selectTypeCondition.intakeType &&
-          d.intake_condition == vis.selectTypeCondition.intakeCondition
-      );
-    }
-
     const getMinDate = function (d1, d2) {
       if (d1 > d2) return d2;
       else return d1;
@@ -166,6 +152,20 @@ class BubbleChart {
             new Date(d.intake_datetime) > minDate) ||
           (new Date(d.outcome_datetime) > minDate &&
             new Date(d.outcome_datetime) < maxDate)
+      );
+    }
+
+    if (vis.selectAge != null) {
+      vis.filtereddata = vis.data.filter(
+        (d) => d.age_group == vis.selectAge.age
+      );
+    }
+
+    if (vis.selectTypeCondition != null) {
+      vis.filtereddata = vis.data.filter(
+        (d) =>
+          d.intake_type == vis.selectTypeCondition.intakeType &&
+          d.intake_condition == vis.selectTypeCondition.intakeCondition
       );
     }
 

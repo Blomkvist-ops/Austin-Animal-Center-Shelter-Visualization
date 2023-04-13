@@ -172,20 +172,6 @@ class BarChart {
 
     vis.filtereddata = vis.data;
 
-    if (vis.selectBreed != null) {
-      vis.filtereddata = vis.data.filter(
-        (d) => d.breed == vis.selectBreed.breed
-      );
-    }
-
-    if (vis.selectTypeCondition != null) {
-      vis.filtereddata = vis.data.filter(
-        (d) =>
-          d.intake_type == vis.selectTypeCondition.intakeType &&
-          d.intake_condition == vis.selectTypeCondition.intakeCondition
-      );
-    }
-
     const getMinDate = function (d1, d2) {
       if (d1 > d2) return d2;
       else return d1;
@@ -206,6 +192,21 @@ class BarChart {
             new Date(d.outcome_datetime) < maxDate)
       );
     }
+
+    if (vis.selectBreed != null) {
+      vis.filtereddata = vis.data.filter(
+        (d) => d.breed == vis.selectBreed.breed
+      );
+    }
+
+    if (vis.selectTypeCondition != null) {
+      vis.filtereddata = vis.data.filter(
+        (d) =>
+          d.intake_type == vis.selectTypeCondition.intakeType &&
+          d.intake_condition == vis.selectTypeCondition.intakeCondition
+      );
+    }
+
 
     const ageCounts = vis.calculateAgeCounts();
 

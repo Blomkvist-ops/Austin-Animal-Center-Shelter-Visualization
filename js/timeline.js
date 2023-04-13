@@ -5,13 +5,14 @@ class timeLine {
    * @param {Array}
    */
   constructor(
-    _config,
-    _data,
-    _data2,
-    _selectBreed,
-    _selectAge,
-    _selectTime,
-    _dispatcher
+      _config,
+      _data,
+      _data2,
+      _selectAnimalType,
+      _selectBreed,
+      _selectAge,
+      _selectTime,
+      _dispatcher
   ) {
     this.config = {
       parentElement: _config.parentElement,
@@ -22,6 +23,7 @@ class timeLine {
     };
     this.data = _data;
     this.data2 = _data2;
+    this.selectAnimalType = _selectAnimalType;
     this.selectBreed = _selectBreed;
     this.selectAge = _selectAge;
     this.dispatcher = _dispatcher;
@@ -33,29 +35,27 @@ class timeLine {
     let vis = this;
 
     vis.svg = d3
-      .select(vis.config.parentElement)
-      .attr("width", vis.config.containerWidth)
-      .attr("height", vis.config.containerHeight)
-      .append("g")
-      .attr(
-        "transform",
-        "translate(" +
-          vis.config.margin.left +
-          "," +
-          vis.config.margin.top +
-          ")"
-      );
+        .select(vis.config.parentElement)
+        .attr("width", vis.config.containerWidth)
+        .attr("height", vis.config.containerHeight)
+        .append("g")
+        .attr(
+            "transform",
+            "translate(" +
+            vis.config.margin.left +
+            "," +
+            vis.config.margin.top +
+            ")"
+        );
 
     vis.width =
-      vis.config.containerWidth -
-      vis.config.margin.left -
-      vis.config.margin.right;
+        vis.config.containerWidth -
+        vis.config.margin.left -
+        vis.config.margin.right;
     vis.height =
-      vis.config.containerHeight -
-      vis.config.margin.top -
-      vis.config.margin.bottom;
-
-    // vis.keys = ["intake", "outcome"]
+        vis.config.containerHeight -
+        vis.config.margin.top -
+        vis.config.margin.bottom;
 
     vis.xScale = d3.scaleTime().range([0, vis.width]);
 
@@ -65,58 +65,58 @@ class timeLine {
     vis.xAxis = d3.axisBottom(vis.xScale);
 
     vis.yAxisR = d3
-      .axisLeft(vis.yScaleR)
-      .ticks(5)
-      .tickPadding(10)
-      .tickSize(-vis.width - 50)
-      .tickFormat(d3.format("d"));
+        .axisLeft(vis.yScaleR)
+        .ticks(5)
+        .tickPadding(10)
+        .tickSize(-vis.width - 50)
+        .tickFormat(d3.format("d"));
 
     vis.size = d3.scaleLinear().domain([0, 100000000]).range([2.5, 1]);
 
     // Define size of SVG drawing area
     vis.svg = d3
-      .select(vis.config.parentElement)
-      .attr("width", vis.config.containerWidth)
-      .attr("height", vis.config.containerHeight);
+        .select(vis.config.parentElement)
+        .attr("width", vis.config.containerWidth)
+        .attr("height", vis.config.containerHeight);
 
     // SVG Group containing the actual chart; D3 margin convention
     vis.chart = vis.svg
-      .append("g")
-      .attr(
-        "transform",
-        `translate(${vis.config.margin.left},${vis.config.margin.top})`
-      );
+        .append("g")
+        .attr(
+            "transform",
+            `translate(${vis.config.margin.left},${vis.config.margin.top})`
+        );
 
     // Append empty x-axis group and move it to the bottom of the chart
     vis.xAxisG = vis.chart
-      .append("g")
-      .attr("class", "axis x-axis")
-      .attr("transform", `translate(0,${vis.height})`);
+        .append("g")
+        .attr("class", "axis x-axis")
+        .attr("transform", `translate(0,${vis.height})`);
 
     vis.yAxisGR = vis.chart
-      .append("g")
-      .attr("class", "axis y-axis left")
-      .attr("transform", "translate(-50, 0)");
+        .append("g")
+        .attr("class", "axis y-axis left")
+        .attr("transform", "translate(-50, 0)");
 
     // Append both axis titles
     vis.chart
-      .append("text")
-      .attr("class", "axis-title")
-      .attr("y", -10)
-      .attr("x", 122)
-      .attr("dy", ".71em")
-      .style("text-anchor", "end")
-      .text("Net Flow of Animals");
+        .append("text")
+        .attr("class", "axis-title")
+        .attr("y", -10)
+        .attr("x", 122)
+        .attr("dy", ".71em")
+        .style("text-anchor", "end")
+        .text("Net Flow of Animals");
 
     // Initialize clipping mask that covers the whole chart
     vis.chart
-      .append("defs")
-      .append("clipPath")
-      .attr("id", "chart-mask")
-      .append("rect")
-      .attr("width", vis.width)
-      .attr("y", -vis.config.margin.top)
-      .attr("height", vis.config.containerHeight);
+        .append("defs")
+        .append("clipPath")
+        .attr("id", "chart-mask")
+        .append("rect")
+        .attr("width", vis.width)
+        .attr("y", -vis.config.margin.top)
+        .attr("height", vis.config.containerHeight);
 
     vis.chart = vis.chart.append("g").attr("clip-path", "url(#chart-mask)");
 
@@ -229,61 +229,66 @@ class timeLine {
 
     //Add net line
     vis.netline = vis.chart
-      .selectAll("path")
-      .data([vis.sortedNet])
-      .join(
-        (enter) =>
-          enter
-            .append("path")
-            .attr("fill", "none")
-            .attr("stroke", "black")
-            .attr("stroke-width", 1),
-        (update) => update,
-        (exit) => exit.remove()
-      )
-      .attr(
-        "d",
-        d3
-          .line()
-          .x(function (d) {
-            return vis.xScale(d.year);
-          })
-          .y(function (d) {
-            return vis.yScaleR(d.value[0]);
-          })
-      );
+        .selectAll("path")
+        .data([vis.sortedNet])
+        .join(
+            (enter) =>
+                enter
+                    .append("path")
+                    .attr("fill", "none")
+                    .attr("stroke", "black")
+                    .attr("stroke-width", 1),
+            (update) => update,
+            (exit) => exit.remove()
+        )
+        .attr(
+            "d",
+            d3
+                .line()
+                .x(function (d) {
+                  return vis.xScale(d.year);
+                })
+                .y(function (d) {
+                  return vis.yScaleR(d.value[0]);
+                })
+        );
 
     const formatDate = (date) => {
       let d = new Date(date),
-        month = "" + (d.getMonth() + 1),
-        day = "" + d.getDate(),
-        year = d.getFullYear();
+          month = "" + (d.getMonth() + 1),
+          day = "" + d.getDate(),
+          year = d.getFullYear();
 
       if (month.length < 2) month = "0" + month;
       if (day.length < 2) day = "0" + day;
       return [year, month, day].join("-");
     };
 
+    const formatType = (type) => {
+      if (type.length == 0) return "General"
+      return type.join(", ");
+    };
+
     let circles = vis.chart
-      .selectAll(".point")
-      .data(vis.sortedNet)
-      .join("circle")
-      .attr("class", "point")
-      .attr("r", vis.r)
-      .attr("cy", (d) => vis.yScaleR(d.value[0]))
-      .attr("cx", (d) => vis.xScale(d.year));
+        .selectAll(".point")
+        .data(vis.sortedNet)
+        .join("circle")
+        .attr("class", "point")
+        .attr("r", vis.r)
+        .attr("cy", (d) => vis.yScaleR(d.value[0]))
+        .attr("cx", (d) => vis.xScale(d.year));
 
     // add tooltips
     circles
-      .on("mouseover", (event, d) => {
-        d3
-          .select("#tooltip")
-          .style("display", "block")
-          .style("left", event.pageX + vis.config.tooltipPadding + "px")
-          .style("top", event.pageY + vis.config.tooltipPadding + "px").html(`
+        .on("mouseover", (event, d) => {
+          d3
+              .select("#tooltip")
+              .style("display", "block")
+              .style("left", event.pageX + vis.config.tooltipPadding + "px")
+              .style("top", event.pageY + vis.config.tooltipPadding + "px").html(`
                     <div class="tooltip-title">Time: ${formatDate(d.year)}</div>
                     <div>
-                        <i>Type: General</i>
+                        <i>Type: ${formatType(vis.selectAnimalType)}</i>
                     </div>
                     <ul>
                         <li>Intake Num: ${d.value[1]}</li>
@@ -291,15 +296,15 @@ class timeLine {
                         <li>Net Num: ${d.value[0]}</li>
                     </ul>
                 `);
-      })
-      .on("mouseleave", () => {
-        d3.select("#tooltip").style("display", "none");
-      });
+        })
+        .on("mouseleave", () => {
+          d3.select("#tooltip").style("display", "none");
+        });
 
     vis.xAxisG
-      .transition()
-      .duration(1000)
-      .call(d3.axisBottom(vis.xScale).ticks(12));
+        .transition()
+        .duration(1000)
+        .call(d3.axisBottom(vis.xScale).ticks(12));
 
     vis.xAxisG.call(vis.xAxis).call((g) => g.select(".domain").remove());
 

@@ -101,18 +101,6 @@ class HeatMap {
 
     vis.filteredData = vis.data;
 
-    if (vis.selectBreed != null) {
-      vis.filteredData = vis.data.filter(
-        (d) => d.breed == vis.selectBreed.breed
-      );
-    }
-
-    if (vis.selectAge != null) {
-      vis.filteredData = vis.data.filter(
-        (d) => d.age_group == vis.selectAge.age
-      );
-    }
-
     const getMinDate = function (d1, d2) {
       if (d1 > d2) return d2;
       else return d1;
@@ -133,6 +121,19 @@ class HeatMap {
             new Date(d.outcome_datetime) < maxDate)
       );
     }
+
+    if (vis.selectBreed != null) {
+      vis.filteredData = vis.data.filter(
+        (d) => d.breed == vis.selectBreed.breed
+      );
+    }
+
+    if (vis.selectAge != null) {
+      vis.filteredData = vis.data.filter(
+        (d) => d.age_group == vis.selectAge.age
+      );
+    }
+
 
     // Group data by intake type and intake condition
     const groupedData = d3.rollups(

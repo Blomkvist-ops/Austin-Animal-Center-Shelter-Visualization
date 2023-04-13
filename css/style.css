@@ -163,3 +163,16 @@ line {
   font-family: "Noto Sans JP", sans-serif;
   font-size: 13px;
 }
+
+
+.intakeline {
+  opacity: 0.3;
+  stroke-width: 1px;
+  stroke: black;
+}
+
+.outcomeline {
+  opacity: 0.3;
+  stroke-width: 1px;
+  stroke: black;
+}

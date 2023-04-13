@@ -4,7 +4,7 @@ class Line {
    * @param {Object}
    * @param {Array}
    */
-  constructor(_config, _data, _data2, _selectBreed, _selectAge, _dispatcher) {
+  constructor(_config, _data, _data2, _selectAnimalType, _selectBreed, _selectAge, _dispatcher) {
     this.config = {
       parentElement: _config.parentElement,
       containerWidth: 1300,
@@ -15,6 +15,7 @@ class Line {
     };
     this.data = _data;
     this.data2 = _data2;
+    this.selectAnimalType = _selectAnimalType;
     this.selectBreed = _selectBreed;
     this.selectAge = _selectAge;
     this.selectTime = null;
@@ -32,10 +33,10 @@ class Line {
       .attr(
         "transform",
         "translate(" +
-          vis.config.margin.left +
-          "," +
-          vis.config.margin.top +
-          ")"
+        vis.config.margin.left +
+        "," +
+        vis.config.margin.top +
+        ")"
       );
 
     vis.width =
@@ -52,7 +53,7 @@ class Line {
     vis.colorScale = d3
       .scaleOrdinal()
       .domain(vis.keys)
-      .range([vis.config.colors[1], vis.config.colors[2]]);
+      .range([vis.config.colors[2], vis.config.colors[1]]);
 
     vis.xScale = d3.scaleTime().range([0, vis.width]);
 
@@ -173,9 +174,21 @@ class Line {
 
     // Update the legendData array with age groups and their colors
     vis.legendData = [
-      { age: "Intake", color: vis.colorScale(0) },
-      { age: "Outcome", color: vis.colorScale(1) },
+      { age: "Intake", color: "#E5CD6C" },
+      { age: "Outcome", color: "#ba7f4e" },
     ];
+
+    // Initialize clipping mask that covers the whole chart
+    vis.chart
+      .append("defs")
+      .append("clipPath")
+      .attr("id", "chart-mask")
+      .append("rect")
+      .attr("width", vis.width)
+      .attr("y", -vis.config.margin.top)
+      .attr("height", vis.config.containerHeight);
+
+    vis.chart = vis.chart.append("g").attr("clip-path", "url(#chart-mask)");
 
     vis.updateVis();
   }
@@ -203,6 +216,40 @@ class Line {
     vis.intakeArr.forEach((e) => {
       e[1] = e[1].length;
     });
+
+    let intakeTypeByDate = d3.group(vis.filtereddata, g => g.datetime.substring(0, 10), g => g.animal_type)
+    vis.intakeTypeArr = Array.from(intakeTypeByDate.entries());
+    vis.intakeNumArr = []
+
+    const getTypeNum = function (currEntry, type) {
+      if (currEntry.get(type)) {
+        return currEntry.get(type).length;
+      }
+      return 0;
+    }
+
+
+    let outcomeTypeByDate = d3.group(vis.filtereddata2, g => g.datetime.substring(0, 10), g => g.animal_type)
+    vis.outcomeTypeArr = Array.from(outcomeTypeByDate.entries());
+    vis.outcomeNumArr = []
+
+    if (vis.selectAnimalType.length > 0) {
+      vis.intakeTypeArr.forEach((e) => {
+        let res = 0
+        for (let i = 0; i < vis.selectAnimalType.length; i++) {
+          res += getTypeNum(e[1], vis.selectAnimalType[i])
+        }
+        vis.intakeNumArr.push([e[0], res]);
+      })
+      vis.outcomeTypeArr.forEach((e) => {
+        let res = 0
+        for (let i = 0; i < vis.selectAnimalType.length; i++) {
+          res += getTypeNum(e[1], vis.selectAnimalType[i])
+        }
+        vis.outcomeNumArr.push([e[0], -res]);
+      })
+    }
+
 
     // get outcome data group by date
     let groupByDate2 = d3.group(vis.filtereddata2, (g) => {
@@ -291,6 +338,14 @@ class Line {
       return parseTime(a[0]) - parseTime(b[0]);
     });
 
+    // sort types arr
+    vis.intakeNumArr.sort(function (a, b) {
+      return parseTime(a[0]) - parseTime(b[0]);
+    });
+    vis.outcomeNumArr.sort(function (a, b) {
+      return parseTime(a[0]) - parseTime(b[0]);
+    });
+
     // vis.mygroup = [0, 1]
     vis.stackedData = d3
       .stack()
@@ -325,7 +380,7 @@ class Line {
       vis.xScale.domain([new Date("2013-10-01"), new Date("2018-05-01")]);
     }
     vis.yScale.domain([-160, 160]);
-    vis.yScaleR.domain([-1500, 1500]);
+    vis.yScaleR.domain([-100, 100]);
 
     vis.renderVis();
   }
@@ -365,6 +420,82 @@ class Line {
       })
       .attr("d", area);
 
+
+    if (vis.selectAnimalType.length > 0) {
+      vis.chart
+        .selectAll(".intakeline")
+        .data([
+          vis.intakeNumArr
+        ]) // Filter out data points with null or undefined average values
+        .join(
+          (enter) =>
+            enter
+              .append("path")
+              .attr("class", "intakeline")
+              .attr("fill", "none"),
+          (update) => update,
+          (exit) => exit.remove()
+        )
+        .attr("d",
+          d3.line().x(function (d) {
+            return vis.xScale(parseTime(d[0]));
+          })
+            .y(function (d) {
+              return vis.yScale(d[1]);
+            })
+        );
+
+      vis.chart
+        .selectAll(".outcomeline")
+        .data([
+          vis.outcomeNumArr
+        ]) // Filter out data points with null or undefined average values
+        .join(
+          (enter) =>
+            enter
+              .append("path")
+              .attr("class", "outcomeline")
+              .attr("fill", "none"),
+          (update) => update,
+          (exit) => exit.remove()
+        )
+        .attr("d",
+          d3.line().x(function (d) {
+            return vis.xScale(parseTime(d[0]));
+          })
+            .y(function (d) {
+              return vis.yScale(d[1]);
+            })
+        );
+    } else {
+      vis.chart
+        .selectAll(".intakeline")
+        .data([]) // Filter out data points with null or undefined average values
+        .join(
+          (enter) =>
+            enter
+              .append("path")
+              .attr("class", "intakeline")
+              .attr("fill", "none"),
+          (update) => update,
+          (exit) => exit.remove()
+        );
+
+      vis.chart
+        .selectAll(".outcomeline")
+        .data([
+        ]) // Filter out data points with null or undefined average values
+        .join(
+          (enter) =>
+            enter
+              .append("path")
+              .attr("class", "outcomeline")
+              .attr("fill", "none"),
+          (update) => update,
+          (exit) => exit.remove()
+        );
+    }
+
     vis.areaChart.append("g").attr("class", "brush").call(vis.brush);
 
     // Update axis and area position
@@ -372,6 +503,7 @@ class Line {
       .transition()
       .duration(1000)
       .call(d3.axisBottom(vis.xScale).ticks(12));
+
     vis.areaChart.selectAll("path").transition().duration(1000).attr("d", area);
 
     vis.brushG.call(vis.brush).call(vis.brush.move, this.defaultSelection);
@@ -402,7 +534,9 @@ class Line {
       .join("rect")
       .attr("width", 15)
       .attr("height", 15)
-      .style("fill", (d) => d.color);
+      .style("fill", (d) => {
+        return d.color;
+      });
 
     vis.legendItems
       .selectAll("text")
