@@ -50,7 +50,7 @@ Conversion notes:
 ## 2 Overview
 
 
-![alt_text](images/image1.jpg "image_tooltip")
+![alt_text](images/image1.png "image_tooltip")
 
 
 As of 2021, the pet ownership rate in North America is estimated to be around 68% of households. This includes ownership of dogs, cats, birds, fish, reptiles, and other animals. Where do people get their pets? Would high pet ownership lead to a high rate of surrendering animals? The data from Austin Animal Center intake and outcome could help us approach the issue of animal welfare and operation conditions of animal shelter. It would help both shelter staff and people who want to get a pet to make better decisions in adopting pets.
